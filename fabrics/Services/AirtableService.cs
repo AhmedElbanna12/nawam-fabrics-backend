@@ -13,11 +13,15 @@ namespace fabrics.Services
     {
         private readonly string _apiKey;
         private readonly string _baseId;
+        private readonly TelegramService _telegram;
 
-        public AirtableService(IConfiguration config)
+
+        public AirtableService(IConfiguration config , TelegramService telegram)
         {
             _apiKey = config["Airtable:ApiKey"];
             _baseId = config["Airtable:BaseId"];
+            _telegram = telegram;
+
         }
 
         private AirtableBase GetBase() => new AirtableBase(_apiKey, _baseId);
@@ -37,7 +41,7 @@ namespace fabrics.Services
                     {
                         ["Id"] = record.Id,
                         ["Name"] = record.GetField("Name"),
-                        ["PricePerMeter"] = record.GetField("Price Per Meter"),
+                        ["PricePerMeter"] = record.GetField("PricePerMeter"),
                         ["Description"] = record.GetField("Description")
                     };
                     products.Add(product);
@@ -88,6 +92,16 @@ namespace fabrics.Services
             var response = await airtableBase.CreateRecord("Reservations", fields);
             if (response.Success)
             {
+                // 📩 ابعت رسالة لصاحب المحل بعد نجاح الحجز
+                var msg = $"📦 حجز جديد!\n" +
+                          $"المنتج: {dto.ProductRecordId}\n" +
+                          $"الكمية: {dto.QuantityMeters} متر\n" +
+                          $"الاسم: {dto.CustomerName}\n" +
+                          $"الموبايل: {dto.CustomerPhone}\n" +
+                          $"العنوان: {dto.CustomerAddress}";
+
+                await _telegram.SendMessageAsync(msg);
+
                 return response.Record.Id;
             }
 

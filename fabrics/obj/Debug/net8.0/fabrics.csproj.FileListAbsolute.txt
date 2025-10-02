@@ -35,3 +35,4 @@ E:\projects\Backend\nawam fabrics\fabrics\fabrics\obj\Debug\net8.0\fabrics.pdb
 E:\projects\Backend\nawam fabrics\fabrics\fabrics\obj\Debug\net8.0\fabrics.genruntimeconfig.cache
 E:\projects\Backend\nawam fabrics\fabrics\fabrics\obj\Debug\net8.0\ref\fabrics.dll
 E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\AirtableApiClient.dll
+E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\Telegram.Bot.dll

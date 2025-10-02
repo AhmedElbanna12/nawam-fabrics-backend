@@ -14,6 +14,7 @@ namespace fabrics
             // Add services to the container.
 
             builder.Services.AddControllers();
+            builder.Services.AddSingleton<TelegramService>();
             builder.Services.AddScoped<AirtableService>();
 
             builder.Services.AddCors(options =>
