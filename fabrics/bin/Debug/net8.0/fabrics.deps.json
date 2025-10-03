@@ -9,6 +9,7 @@
       "fabrics/1.0.0": {
         "dependencies": {
           "Airtable": "1.7.1",
+          "Docker.DotNet": "3.125.15",
           "Swashbuckle.AspNetCore": "6.6.2",
           "Telegram.Bot": "22.7.2"
         },
@@ -21,6 +22,19 @@
           "lib/net8.0/AirtableApiClient.dll": {
             "assemblyVersion": "2.0.0.0",
             "fileVersion": "2.0.0.0"
+          }
+        }
+      },
+      "Docker.DotNet/3.125.15": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.1",
+          "System.Buffers": "4.5.1",
+          "System.Threading.Tasks.Extensions": "4.5.4"
+        },
+        "runtime": {
+          "lib/netstandard2.1/Docker.DotNet.dll": {
+            "assemblyVersion": "3.125.0.0",
+            "fileVersion": "3.125.15.1"
           }
         }
       },
@@ -57,6 +71,14 @@
           "lib/netstandard2.0/Microsoft.OpenApi.dll": {
             "assemblyVersion": "1.6.14.0",
             "fileVersion": "1.6.14.0"
+          }
+        }
+      },
+      "Newtonsoft.Json/13.0.1": {
+        "runtime": {
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {
+            "assemblyVersion": "13.0.0.0",
+            "fileVersion": "13.0.1.25517"
           }
         }
       },
@@ -98,7 +120,9 @@
           }
         }
       },
+      "System.Buffers/4.5.1": {},
       "System.Text.Json/8.0.5": {},
+      "System.Threading.Tasks.Extensions/4.5.4": {},
       "Telegram.Bot/22.7.2": {
         "dependencies": {
           "Microsoft.Extensions.Options.ConfigurationExtensions": "8.0.0",
@@ -125,6 +149,13 @@
       "sha512": "sha512-PS20GVJHGNfxGZI+9ZVHSCPuZRHWB+d5ZmWZnUANLBNliGuKfvIDXyY+jUAW9jwn4eFYa0+uq5bzZLoQwmislw==",
       "path": "airtable/1.7.1",
       "hashPath": "airtable.1.7.1.nupkg.sha512"
+    },
+    "Docker.DotNet/3.125.15": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XN8FKxVv8Mjmwu104/Hl9lM61pLY675s70gzwSj8KR5pwblo8HfWLcCuinh9kYsqujBkMH4HVRCEcRuU6al4BQ==",
+      "path": "docker.dotnet/3.125.15",
+      "hashPath": "docker.dotnet.3.125.15.nupkg.sha512"
     },
     "Microsoft.Extensions.ApiDescription.Server/6.0.5": {
       "type": "package",
@@ -182,6 +213,13 @@
       "path": "microsoft.openapi/1.6.14",
       "hashPath": "microsoft.openapi.1.6.14.nupkg.sha512"
     },
+    "Newtonsoft.Json/13.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A==",
+      "path": "newtonsoft.json/13.0.1",
+      "hashPath": "newtonsoft.json.13.0.1.nupkg.sha512"
+    },
     "Swashbuckle.AspNetCore/6.6.2": {
       "type": "package",
       "serviceable": true,
@@ -210,12 +248,26 @@
       "path": "swashbuckle.aspnetcore.swaggerui/6.6.2",
       "hashPath": "swashbuckle.aspnetcore.swaggerui.6.6.2.nupkg.sha512"
     },
+    "System.Buffers/4.5.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Rw7ijyl1qqRS0YQD/WycNst8hUUMgrMH4FCn1nNm27M4VxchZ1js3fVjQaANHO5f3sN4isvP4a+Met9Y4YomAg==",
+      "path": "system.buffers/4.5.1",
+      "hashPath": "system.buffers.4.5.1.nupkg.sha512"
+    },
     "System.Text.Json/8.0.5": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-0f1B50Ss7rqxXiaBJyzUu9bWFOO2/zSlifZ/UNMdiIpDYe4cY4LQQicP4nirK1OS31I43rn062UIJ1Q9bpmHpg==",
       "path": "system.text.json/8.0.5",
       "hashPath": "system.text.json.8.0.5.nupkg.sha512"
+    },
+    "System.Threading.Tasks.Extensions/4.5.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg==",
+      "path": "system.threading.tasks.extensions/4.5.4",
+      "hashPath": "system.threading.tasks.extensions.4.5.4.nupkg.sha512"
     },
     "Telegram.Bot/22.7.2": {
       "type": "package",

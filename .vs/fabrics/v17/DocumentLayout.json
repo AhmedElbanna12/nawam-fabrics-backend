@@ -7,40 +7,12 @@
       "RelativeMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|solutionrelative:fabrics\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|e:\\projects\\backend\\nawam fabrics\\fabrics\\fabrics\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|solutionrelative:fabrics\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|e:\\projects\\backend\\nawam fabrics\\fabrics\\fabrics\\services\\airtableservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|solutionrelative:fabrics\\services\\airtableservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|e:\\projects\\backend\\nawam fabrics\\fabrics\\fabrics\\dtos\\createreservationdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|solutionrelative:fabrics\\dtos\\createreservationdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|e:\\projects\\backend\\nawam fabrics\\fabrics\\fabrics\\controllers\\reservationscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|solutionrelative:fabrics\\controllers\\reservationscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|e:\\projects\\backend\\nawam fabrics\\fabrics\\fabrics\\controllers\\productscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|solutionrelative:fabrics\\controllers\\productscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|e:\\projects\\backend\\nawam fabrics\\fabrics\\fabrics\\controllers\\categoriescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|solutionrelative:fabrics\\controllers\\categoriescontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|e:\\projects\\backend\\nawam fabrics\\fabrics\\fabrics\\services\\telegramservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|solutionrelative:fabrics\\services\\telegramservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|e:\\projects\\backend\\nawam fabrics\\fabrics\\fabrics\\fabrics.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
-      "RelativeMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|solutionrelative:fabrics\\fabrics.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|e:\\projects\\backend\\nawam fabrics\\fabrics\\fabrics\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
-      "RelativeMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|solutionrelative:fabrics\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+      "AbsoluteMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|e:\\projects\\backend\\nawam fabrics\\fabrics\\fabrics\\services\\airtableservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{99B181C4-E8D4-45E7-B3C9-D2136BA37CCF}|fabrics\\fabrics.csproj|solutionrelative:fabrics\\services\\airtableservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -50,58 +22,19 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "AirtableService.cs",
-              "DocumentMoniker": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Services\\AirtableService.cs",
-              "RelativeDocumentMoniker": "fabrics\\Services\\AirtableService.cs",
-              "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Services\\AirtableService.cs",
-              "RelativeToolTip": "fabrics\\Services\\AirtableService.cs",
-              "ViewState": "AgIAADEAAAAAwMzMzMzUv2YAAAA2AAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-01T14:57:13.014Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "productsController.cs",
-              "DocumentMoniker": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Controllers\\productsController.cs",
-              "RelativeDocumentMoniker": "fabrics\\Controllers\\productsController.cs",
-              "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Controllers\\productsController.cs",
-              "RelativeToolTip": "fabrics\\Controllers\\productsController.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAuAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-01T16:26:24.774Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 1,
               "Title": "ReservationsController.cs",
               "DocumentMoniker": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Controllers\\ReservationsController.cs",
               "RelativeDocumentMoniker": "fabrics\\Controllers\\ReservationsController.cs",
               "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Controllers\\ReservationsController.cs",
               "RelativeToolTip": "fabrics\\Controllers\\ReservationsController.cs",
-              "ViewState": "AgIAAAEAAAAAAAAAAADwvxcAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-01T16:27:17.166Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "CreateReservationDto.cs",
-              "DocumentMoniker": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Dtos\\CreateReservationDto.cs",
-              "RelativeDocumentMoniker": "fabrics\\Dtos\\CreateReservationDto.cs",
-              "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Dtos\\CreateReservationDto.cs",
-              "RelativeToolTip": "fabrics\\Dtos\\CreateReservationDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-01T15:37:57.682Z",
+              "WhenOpened": "2025-10-03T11:41:41.541Z",
               "EditorCaption": ""
             },
             {
@@ -112,74 +45,22 @@
               "RelativeDocumentMoniker": "fabrics\\Program.cs",
               "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Program.cs",
               "RelativeToolTip": "fabrics\\Program.cs",
-              "ViewState": "AgIAAAcAAADgZWZmZuYuwBAAAAA9AAAAAAAAAA==",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-01T15:10:18.991Z",
+              "WhenOpened": "2025-10-02T23:35:53.597Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "appsettings.json",
-              "DocumentMoniker": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\appsettings.json",
-              "RelativeDocumentMoniker": "fabrics\\appsettings.json",
-              "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\appsettings.json",
-              "RelativeToolTip": "fabrics\\appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-10-01T15:33:28.712Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "CategoriesController.cs",
-              "DocumentMoniker": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Controllers\\CategoriesController.cs",
-              "RelativeDocumentMoniker": "fabrics\\Controllers\\CategoriesController.cs",
-              "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Controllers\\CategoriesController.cs",
-              "RelativeToolTip": "fabrics\\Controllers\\CategoriesController.cs",
-              "ViewState": "AgIAAAMAAAAAmZmZmZkRwBYAAAAAAAAAAAAAAA==",
+              "DocumentIndex": 2,
+              "Title": "AirtableService.cs",
+              "DocumentMoniker": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Services\\AirtableService.cs",
+              "RelativeDocumentMoniker": "fabrics\\Services\\AirtableService.cs",
+              "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Services\\AirtableService.cs",
+              "RelativeToolTip": "fabrics\\Services\\AirtableService.cs",
+              "ViewState": "AgIAAI8AAAAAAAAAAAAAAKMAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-01T16:24:10.38Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "TelegramService.cs",
-              "DocumentMoniker": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Services\\TelegramService.cs",
-              "RelativeDocumentMoniker": "fabrics\\Services\\TelegramService.cs",
-              "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Services\\TelegramService.cs",
-              "RelativeToolTip": "fabrics\\Services\\TelegramService.cs",
-              "ViewState": "AgIAAAYAAAAAAAAAAADwvxkAAAAFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-02T19:59:57.086Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 8,
-              "Title": "fabrics",
-              "DocumentMoniker": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\fabrics.csproj",
-              "RelativeDocumentMoniker": "fabrics\\fabrics.csproj",
-              "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\fabrics.csproj",
-              "RelativeToolTip": "fabrics\\fabrics.csproj",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2025-10-02T18:27:03.86Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "appsettings.Development.json",
-              "DocumentMoniker": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\appsettings.Development.json",
-              "RelativeDocumentMoniker": "fabrics\\appsettings.Development.json",
-              "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\appsettings.Development.json",
-              "RelativeToolTip": "fabrics\\appsettings.Development.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-10-01T17:46:40.413Z",
+              "WhenOpened": "2025-10-02T23:19:49.466Z",
               "EditorCaption": ""
             }
           ]

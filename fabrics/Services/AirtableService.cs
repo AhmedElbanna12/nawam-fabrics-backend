@@ -30,26 +30,78 @@ namespace fabrics.Services
         public async Task<List<Dictionary<string, object>>> GetProductsAsync()
         {
             var products = new List<Dictionary<string, object>>();
-            using var airtableBase = GetBase();
-            var response = await airtableBase.ListRecords("Products");
-
-            if (response.Success)
+            try
             {
-                foreach (var record in response.Records)
+                using var airtableBase = GetBase();
+
+                var categoriesResponse = await airtableBase.ListRecords("Categories");
+                var categoriesDict = new Dictionary<string, string>();
+
+                if (categoriesResponse.Success)
                 {
-                    var product = new Dictionary<string, object>
+                    Console.WriteLine("=== Categories ===");
+                    foreach (var cat in categoriesResponse.Records)
                     {
-                        ["Id"] = record.Id,
-                        ["Name"] = record.GetField("Name"),
-                        ["PricePerMeter"] = record.GetField("PricePerMeter"),
-                        ["Description"] = record.GetField("Description")
-                    };
-                    products.Add(product);
+                        var categoryName = cat.GetField<string>("Name");
+                        categoriesDict[cat.Id] = categoryName;
+                        Console.WriteLine($"ID: {cat.Id} -> Name: {categoryName}");
+                    }
                 }
+
+                var response = await airtableBase.ListRecords("Products");
+                if (response.Success)
+                {
+                    foreach (var record in response.Records)
+                    {
+                        try
+                        {
+                            var mainCategoryIds = record.GetField<string[]>("MainCategory");
+                            var subCategoryIds = record.GetField<string[]>("subCategory");
+
+                            Console.WriteLine($"\n=== Product: {record.GetField("Name")} ===");
+                            Console.WriteLine($"MainCategory IDs: {string.Join(", ", mainCategoryIds ?? new string[0])}");
+                            Console.WriteLine($"SubCategory IDs: {string.Join(", ", subCategoryIds ?? new string[0])}");
+
+                            var mainCategoryId = mainCategoryIds?.FirstOrDefault();
+                            var subCategoryId = subCategoryIds?.FirstOrDefault();
+
+                            Console.WriteLine($"Looking for MainCategory ID: {mainCategoryId}");
+                            Console.WriteLine($"Found in dict: {(mainCategoryId != null && categoriesDict.ContainsKey(mainCategoryId))}");
+
+                            var mainCategoryName = mainCategoryId != null && categoriesDict.ContainsKey(mainCategoryId)
+                                                  ? categoriesDict[mainCategoryId]
+                                                  : null;
+                            var subCategoryName = subCategoryId != null && categoriesDict.ContainsKey(subCategoryId)
+                                                 ? categoriesDict[subCategoryId]
+                                                 : null;
+
+                            var product = new Dictionary<string, object>
+                            {
+                                ["Id"] = record.Id,
+                                ["Name"] = record.GetField("Name"),
+                                ["PricePerMeter"] = record.GetField("PricePerMeter"),
+                                ["Description"] = record.GetField("Description"),
+                                ["MainCategory"] = mainCategoryName,
+                                ["subCategory"] = subCategoryName
+                            };
+
+                            products.Add(product);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error processing record {record.Id}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR: {ex.Message}");
             }
 
             return products;
         }
+
 
         public async Task<List<Dictionary<string, object>>> GetCategoriesAsync()
         {

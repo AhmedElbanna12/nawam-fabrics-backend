@@ -1,4 +1,5 @@
 
+using Docker.DotNet.Models;
 using fabrics.Services;
 using System.Net.Http.Headers;
 
@@ -10,7 +11,11 @@ namespace fabrics
         {
             var builder = WebApplication.CreateBuilder(args);
 
-          
+           // builder.WebHost.UseUrls("http://0.0.0.0:" + (Environment.GetEnvironmentVariable("PORT") ?? "7227"));
+           ////builder.WebHost.UseUrls($"http://*:{Port}");
+
+
+
             // Add services to the container.
 
             builder.Services.AddControllers();

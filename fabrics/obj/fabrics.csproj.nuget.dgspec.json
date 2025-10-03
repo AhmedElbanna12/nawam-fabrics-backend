@@ -55,6 +55,10 @@
               "target": "Package",
               "version": "[1.7.1, )"
             },
+            "Docker.DotNet": {
+              "target": "Package",
+              "version": "[3.125.15, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.6.2, )"
