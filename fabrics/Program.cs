@@ -11,7 +11,7 @@ namespace fabrics
         {
             var builder = WebApplication.CreateBuilder(args);
 
-           // builder.WebHost.UseUrls("http://0.0.0.0:" + (Environment.GetEnvironmentVariable("PORT") ?? "7227"));
+            builder.WebHost.UseUrls("http://0.0.0.0:" + (Environment.GetEnvironmentVariable("PORT") ?? "7227"));
            ////builder.WebHost.UseUrls($"http://*:{Port}");
 
 
@@ -47,7 +47,7 @@ namespace fabrics
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+           // app.UseHttpsRedirection();
 
 
             app.UseAuthorization();

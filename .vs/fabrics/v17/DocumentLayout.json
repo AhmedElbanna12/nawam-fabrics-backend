@@ -34,8 +34,7 @@
               "RelativeToolTip": "fabrics\\Controllers\\ReservationsController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABYAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-03T11:41:41.541Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-03T11:41:41.541Z"
             },
             {
               "$type": "Document",
@@ -45,7 +44,7 @@
               "RelativeDocumentMoniker": "fabrics\\Program.cs",
               "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Program.cs",
               "RelativeToolTip": "fabrics\\Program.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAANAAAAAAAAAA==",
+              "ViewState": "AgIAACEAAADAmJmZmZktwDEAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-02T23:35:53.597Z",
               "EditorCaption": ""
@@ -60,8 +59,7 @@
               "RelativeToolTip": "fabrics\\Services\\AirtableService.cs",
               "ViewState": "AgIAAI8AAAAAAAAAAAAAAKMAAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-02T23:19:49.466Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-02T23:19:49.466Z"
             }
           ]
         }
