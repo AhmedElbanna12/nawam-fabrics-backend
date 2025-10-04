@@ -16,7 +16,7 @@ namespace fabrics.Services
         private readonly TelegramService _telegram;
 
 
-        public AirtableService(IConfiguration config , TelegramService telegram)
+        public AirtableService(IConfiguration config, TelegramService telegram)
         {
             _apiKey = config["Airtable:ApiKey"];
             _baseId = config["Airtable:BaseId"];
@@ -127,11 +127,29 @@ namespace fabrics.Services
             return categories;
         }
 
+        // ✅ دالة تجيب اسم المنتج من Airtable بالـ Record ID
+        public async Task<string> GetProductNameByIdAsync(string recordId)
+        {
+            using var airtableBase = GetBase();
+            var response = await airtableBase.RetrieveRecord("Products", recordId);
+
+            if (response.Success && response.Record.Fields.ContainsKey("Name"))
+            {
+                return response.Record.Fields["Name"]?.ToString() ?? "اسم غير معروف";
+            }
+
+            return "اسم غير معروف";
+        }
+
+
+
+
         // إنشاء Reservation جديد
         public async Task<string> CreateReservationAsync(CreateReservationDto dto)
         {
             if (string.IsNullOrEmpty(dto.ProductRecordId))
                 throw new Exception("ProductRecordId is required and must be a valid Airtable record ID.");
+
             using var airtableBase = GetBase();
 
             var fields = new Fields();
@@ -142,27 +160,31 @@ namespace fabrics.Services
             fields.AddField("Customer Address", dto.CustomerAddress);
 
             var response = await airtableBase.CreateRecord("Reservations", fields);
+
             if (response.Success)
             {
-                // 📩 ابعت رسالة لصاحب المحل بعد نجاح الحجز
-                var msg = $"📦 حجز جديد!\n" +
-                          $"المنتج: {dto.ProductRecordId}\n" +
-                          $"الكمية: {dto.QuantityMeters} متر\n" +
-                          $"الاسم: {dto.CustomerName}\n" +
-                          $"الموبايل: {dto.CustomerPhone}\n" +
-                          $"العنوان: {dto.CustomerAddress}";
+                // 🟢 1. هات اسم المنتج بدل الـ ID
+                var productName = await GetProductNameByIdAsync(dto.ProductRecordId);
 
+                // 🟢 2. جهّز الرسالة بشكل منسق
+                var msg = $"🧾 حجز جديد!\n" +
+                          $"📦 المنتج: {productName}\n" +
+                          $"📏 الكمية: {dto.QuantityMeters} متر\n" +
+                          $"👤 الاسم: {dto.CustomerName}\n" +
+                          $"📞 الموبايل: {dto.CustomerPhone}\n" +
+                          $"📍 العنوان: {dto.CustomerAddress}";
+
+                // 🟢 3. ابعت الإشعار لتليجرام
                 await _telegram.SendMessageAsync(msg);
 
                 return response.Record.Id;
             }
 
-            // Log the detailed error for debugging
             var errorMsg = response.AirtableApiError?.ErrorMessage ?? "Unknown error";
             var detailedMsg = response.AirtableApiError?.DetailedErrorMessage ?? "No details";
             throw new Exception($"Airtable error: {errorMsg}. Details: {detailedMsg}");
         }
     }
-}
+    }
 
 
