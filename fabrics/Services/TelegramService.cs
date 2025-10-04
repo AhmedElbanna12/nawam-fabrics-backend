@@ -28,7 +28,8 @@ namespace fabrics.Services
 
         public async Task RegisterUserAsync(Update update)
         {
-            if (update.Message == null) return;
+            if (update.Message is null || update.Message.Chat is null)
+                return;
 
             var chatId = update.Message.Chat.Id;
             var firstName = update.Message.Chat.FirstName ?? "Unknown";
@@ -56,12 +57,18 @@ namespace fabrics.Services
                     );
                 }
 
-                await _botClient.SendMessage(chatId, $"✅ تم تسجيلك يا {firstName} لاستقبال بيانات الحجوزات.");
+                await _botClient.SendMessage(
+                    chatId: chatId,
+                    text: $"✅ تم تسجيلك يا {firstName} لاستقبال بيانات الحجوزات."
+                );
                 Console.WriteLine($"📦 تم تسجيل {firstName} ({chatId})");
             }
             else
             {
-                await _botClient.SendMessage(chatId, $"أنت مسجل بالفعل ✅");
+                await _botClient.SendMessage(
+                    chatId: chatId,
+                    text: $"أنت مسجل بالفعل ✅"
+                );
             }
         }
 
@@ -88,7 +95,10 @@ namespace fabrics.Services
             {
                 try
                 {
-                    await _botClient.SendMessage(chatId, message);
+                    await _botClient.SendMessage(
+                        chatId: chatId,
+                        text: message
+                    );
                 }
                 catch (Exception ex)
                 {
