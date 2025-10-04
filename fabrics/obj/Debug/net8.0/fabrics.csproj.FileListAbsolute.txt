@@ -38,3 +38,4 @@ E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\AirtableApiCl
 E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\Telegram.Bot.dll
 E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\Docker.DotNet.dll
 E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\Newtonsoft.Json.dll
+E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\vendors.json
