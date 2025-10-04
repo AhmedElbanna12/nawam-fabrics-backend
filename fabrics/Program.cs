@@ -2,6 +2,8 @@
 using Docker.DotNet.Models;
 using fabrics.Services;
 using System.Net.Http.Headers;
+using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace fabrics
 {
@@ -38,6 +40,19 @@ namespace fabrics
 
             var app = builder.Build();
             app.UseCors("AllowAll");
+            var telegramService = app.Services.GetRequiredService<TelegramService>();
+
+            // ? polling loop
+            var bot = new TelegramBotClient(builder.Configuration["Telegram:BotToken"]);
+
+            var cts = new CancellationTokenSource();
+            bot.StartReceiving(
+                async (bot, update, token) => await telegramService.RegisterUserAsync(update),
+                (bot, exception, token) => Task.CompletedTask,
+                cancellationToken: cts.Token
+            );
+
+            app.MapControllers(); // ?? ???? ??? Controllers ?????
 
 
             // Configure the HTTP request pipeline.
