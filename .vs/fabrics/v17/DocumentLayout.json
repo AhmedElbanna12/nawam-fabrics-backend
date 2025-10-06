@@ -42,8 +42,7 @@
               "RelativeToolTip": "fabrics\\Program.cs",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-06T18:44:51.621Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-06T18:44:51.621Z"
             },
             {
               "$type": "Document",
@@ -55,8 +54,7 @@
               "RelativeToolTip": "fabrics\\Services\\TelegramService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-06T13:31:09.171Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-06T13:31:09.171Z"
             },
             {
               "$type": "Document",
@@ -68,8 +66,7 @@
               "RelativeToolTip": "fabrics\\Services\\FaqService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAFcAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-06T13:00:39.945Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-06T13:00:39.945Z"
             },
             {
               "$type": "Document",
@@ -81,8 +78,7 @@
               "RelativeToolTip": "fabrics\\Controllers\\WebhookController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAGwAAABVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-06T12:22:08.324Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-06T12:22:08.324Z"
             },
             {
               "$type": "Document",
@@ -92,7 +88,7 @@
               "RelativeDocumentMoniker": "fabrics\\appsettings.json",
               "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\appsettings.json",
               "RelativeToolTip": "fabrics\\appsettings.json",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAiwAwAAAAmAAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAiwA8AAAASAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2025-10-06T12:13:21.603Z",
               "EditorCaption": ""
