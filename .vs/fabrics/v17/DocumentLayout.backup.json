@@ -60,9 +60,10 @@
               "RelativeDocumentMoniker": "fabrics\\Controllers\\WebhookController.cs",
               "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Controllers\\WebhookController.cs",
               "RelativeToolTip": "fabrics\\Controllers\\WebhookController.cs",
-              "ViewState": "AgIAAFcAAAAAAAAAAAAuwG4AAABHAAAAAAAAAA==",
+              "ViewState": "AgIAAE8AAAAAAAAAAAAmwCoAAAAvAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-06T12:22:08.324Z"
+              "WhenOpened": "2025-10-06T12:22:08.324Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -70,9 +71,9 @@
               "Title": "appsettings.json",
               "DocumentMoniker": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\appsettings.json",
               "RelativeDocumentMoniker": "fabrics\\appsettings.json",
-              "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\appsettings.json*",
-              "RelativeToolTip": "fabrics\\appsettings.json*",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAiwBoAAAAAAAAAAAAAAA==",
+              "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\appsettings.json",
+              "RelativeToolTip": "fabrics\\appsettings.json",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAiwAoAAAAjAQAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2025-10-06T12:13:21.603Z",
               "EditorCaption": ""
