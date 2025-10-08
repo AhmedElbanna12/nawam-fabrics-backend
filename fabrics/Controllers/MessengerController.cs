@@ -19,17 +19,21 @@ namespace fabrics.Controllers
 
         // ✅ Verification endpoint (GET)
         [HttpGet("webhook")]
-        public IActionResult VerifyMessengerWebhook([FromQuery] string hub_mode, [FromQuery] string hub_verify_token, [FromQuery] string hub_challenge)
+        public IActionResult VerifyMessengerWebhook(
+     [FromQuery(Name = "hub.mode")] string mode,
+     [FromQuery(Name = "hub.verify_token")] string verifyToken,
+     [FromQuery(Name = "hub.challenge")] string challenge)
         {
-            const string VERIFY_TOKEN = "your-verify-token"; // نفس اللي حطيته في Meta Developer
+            const string VERIFY_TOKEN = "your-verify-token"; // لازم تكون نفس اللي في Meta Developer
 
-            if (hub_mode == "subscribe" && hub_verify_token == VERIFY_TOKEN)
+            if (mode == "subscribe" && verifyToken == VERIFY_TOKEN)
             {
-                return Ok(hub_challenge);
+                return Ok(challenge);
             }
 
-            return Unauthorized();
+            return Forbid();
         }
+
 
         // ✅ Receive messages (POST)
         [HttpPost("webhook")]

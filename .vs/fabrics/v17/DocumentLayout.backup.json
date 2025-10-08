@@ -50,9 +50,9 @@
               "Title": "MessengerController.cs",
               "DocumentMoniker": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Controllers\\MessengerController.cs",
               "RelativeDocumentMoniker": "fabrics\\Controllers\\MessengerController.cs",
-              "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Controllers\\MessengerController.cs*",
-              "RelativeToolTip": "fabrics\\Controllers\\MessengerController.cs*",
-              "ViewState": "AgIAABIAAAAAAAAAAAAqwB8AAAAJAAAAAAAAAA==",
+              "ToolTip": "E:\\projects\\Backend\\nawam fabrics\\fabrics\\fabrics\\Controllers\\MessengerController.cs",
+              "RelativeToolTip": "fabrics\\Controllers\\MessengerController.cs",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAqwCMAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-07T18:21:38.952Z",
               "EditorCaption": ""
@@ -67,8 +67,7 @@
               "RelativeToolTip": "fabrics\\Services\\MessengerService.cs",
               "ViewState": "AgIAAL8AAAAAAAAAAAAAwGwAAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-07T18:17:04.396Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-07T18:17:04.396Z"
             },
             {
               "$type": "Document",
@@ -92,8 +91,7 @@
               "RelativeToolTip": "fabrics\\Program.cs",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAABsAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-06T18:44:51.621Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-06T18:44:51.621Z"
             }
           ]
         }
