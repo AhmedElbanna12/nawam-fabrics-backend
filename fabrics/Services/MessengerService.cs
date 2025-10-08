@@ -145,10 +145,17 @@ namespace fabrics.Services
         }
 
         // ✅ عرض المنتجات بناءً على SubCategory
+        // ✅ عرض المنتجات في شكل كروت (Cards)
         public async Task ShowProductsAsync(string recipientId, string subCategoryId)
         {
             var products = await _airtable.GetProductsAsync();
-            var filtered = products.Where(p => (string)p["subCategory"] == subCategoryId).ToList();
+
+            var filtered = products
+                .Where(p =>
+                    p.TryGetValue("subCategory", out var subObj) &&
+                    subObj is string[] subArr &&
+                    subArr.Contains(subCategoryId))
+                .ToList();
 
             if (!filtered.Any())
             {
@@ -156,12 +163,55 @@ namespace fabrics.Services
                 return;
             }
 
-            foreach (var p in filtered)
+            // نحول المنتجات ل cards (كل كارت = منتج)
+            var elements = filtered.Select(p => new
             {
-                var text = $"📦 {p["Name"]}\n💰 السعر: {p["PricePerMeter"]} جنيه\n📝 {p["Description"]}";
-                await SendTextMessageAsync(recipientId, text);
+                title = p["Name"].ToString(),
+                subtitle = $"💰 السعر: {p["PricePerMeter"]} جنيه",
+                image_url = p.ContainsKey("Image") && p["Image"] is string[] images && images.Length > 0
+                    ? images[0]
+                    : "https://via.placeholder.com/400x300.png?text=No+Image", // fallback image
+                buttons = new[]
+                {
+            new
+            {
+                type = "postback",
+                title = "📄 تفاصيل",
+                payload = $"DETAIL_{p["Id"]}"
             }
         }
+            }).ToList();
+
+            // Messenger يدعم max 10 عناصر في كل message
+            var groups = elements
+                .Select((item, index) => new { item, index })
+                .GroupBy(x => x.index / 10)
+                .Select(g => g.Select(x => x.item).ToList())
+                .ToList();
+
+            foreach (var group in groups)
+            {
+                var payload = new
+                {
+                    recipient = new { id = recipientId },
+                    message = new
+                    {
+                        attachment = new
+                        {
+                            type = "template",
+                            payload = new
+                            {
+                                template_type = "generic",
+                                elements = group
+                            }
+                        }
+                    }
+                };
+
+                await SendRequestAsync(payload);
+            }
+        }
+
 
         // ✅ معالجه postback
         private async Task HandlePostbackAsync(string senderId, string payload)
@@ -176,6 +226,19 @@ namespace fabrics.Services
                 var subId = payload.Replace("SUB_", "");
                 await ShowProductsAsync(senderId, subId);
             }
+            else if (payload.StartsWith("DETAIL_"))
+            {
+                var productId = payload.Replace("DETAIL_", "");
+                var products = await _airtable.GetProductsAsync();
+                var product = products.FirstOrDefault(p => p["Id"].ToString() == productId);
+
+                if (product != null)
+                {
+                    var details = $"📦 {product["Name"]}\n💰 السعر: {product["PricePerMeter"]} جنيه\n📝 {product["Description"]}";
+                    await SendTextMessageAsync(senderId, details);
+                }
+            }
+
         }
 
         // ✅ دالة عامة لإرسال أي طلب إلى Graph API
