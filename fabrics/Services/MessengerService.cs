@@ -63,65 +63,34 @@ namespace fabrics.Services
         {
             var categories = await _airtable.GetCategoriesAsync();
 
-            // ✅ نعرض فقط الكاتيجوري اللي الـ ParentCategory فيها null
+            // ✅ نعرض فقط الكاتيجوري اللي ParentCategory = null أو مش موجودة
             var mainCategories = categories
                 .Where(c =>
                     !c.ContainsKey("ParentCategory") ||
                     c["ParentCategory"] == null ||
                     (c["ParentCategory"] is string[] arr && arr.Length == 0)
                 )
-                .Take(6)
-                .Select(c => new
-                {
-                    type = "postback",
-                    title = c["Name"].ToString(),
-                    payload = $"MAIN_{c["Id"]}"
-                })
                 .ToList();
 
-            var payload = new
+            if (!mainCategories.Any())
             {
-                recipient = new { id = recipientId },
-                message = new
-                {
-                    attachment = new
-                    {
-                        type = "template",
-                        payload = new
-                        {
-                            template_type = "button",
-                            text = "اختار الفئة الرئيسية:",
-                            buttons = mainCategories
-                        }
-                    }
-                }
-            };
+                await SendTextMessageAsync(recipientId, "❌ لا يوجد فئات رئيسية حالياً.");
+                return;
+            }
 
-            await SendRequestAsync(payload);
-        }
-
-
-        // ✅ عرض الفئات الفرعية
-        public async Task ShowSubCategoriesAsync(string recipientId, string mainCategoryId)
-        {
-            var categories = await _airtable.GetCategoriesAsync();
-
-            // ✅ نعرض فقط الكاتيجوري اللي الـ ParentCategory فيها = mainCategoryId
-            var subCategories = categories
-                .Where(c =>
-                    c.ContainsKey("ParentCategory") &&
-                    c["ParentCategory"] is string[] parentArr &&
-                    parentArr.Contains(mainCategoryId)
-                )
-                .Select(c => new
+            // ✅ نقسمهم مجموعات كل مجموعة فيها 3 أزرار (لأن الماسنجر بيسمح بـ 3 فقط)
+            var buttonGroups = mainCategories
+                .Select((c, i) => new { c, i })
+                .GroupBy(x => x.i / 3)
+                .Select(g => g.Select(x => new
                 {
                     type = "postback",
-                    title = c["Name"].ToString(),
-                    payload = $"SUB_{c["Id"]}"
-                })
+                    title = x.c["Name"].ToString(),
+                    payload = $"MAIN_{x.c["Id"]}"
+                }).ToList())
                 .ToList();
 
-            if (subCategories.Any())
+            foreach (var group in buttonGroups)
             {
                 var payload = new
                 {
@@ -134,17 +103,71 @@ namespace fabrics.Services
                             payload = new
                             {
                                 template_type = "button",
-                                text = "اختار الفئة الفرعية:",
-                                buttons = subCategories.Take(4)
+                                text = "📂 اختار الفئة الرئيسية:",
+                                buttons = group
                             }
                         }
                     }
                 };
+
                 await SendRequestAsync(payload);
+                await Task.Delay(500); // تأخير بسيط بين الرسائل عشان الماسنجر ما يحجبهمش
             }
-            else
+        }
+
+        public async Task ShowSubCategoriesAsync(string recipientId, string mainCategoryId)
+        {
+            var categories = await _airtable.GetCategoriesAsync();
+
+            // ✅ نعرض فقط الفئات اللي ParentCategory = mainCategoryId
+            var subCategories = categories
+                .Where(c =>
+                    c.ContainsKey("ParentCategory") &&
+                    c["ParentCategory"] is string[] parentArr &&
+                    parentArr.Contains(mainCategoryId)
+                )
+                .ToList();
+
+            if (!subCategories.Any())
             {
                 await SendTextMessageAsync(recipientId, "❌ لا يوجد فئات فرعية لهذه الفئة.");
+                return;
+            }
+
+            // ✅ نقسمهم مجموعات كل مجموعة فيها 3 أزرار
+            var buttonGroups = subCategories
+                .Select((c, i) => new { c, i })
+                .GroupBy(x => x.i / 3)
+                .Select(g => g.Select(x => new
+                {
+                    type = "postback",
+                    title = x.c["Name"].ToString(),
+                    payload = $"SUB_{x.c["Id"]}"
+                }).ToList())
+                .ToList();
+
+            foreach (var group in buttonGroups)
+            {
+                var payload = new
+                {
+                    recipient = new { id = recipientId },
+                    message = new
+                    {
+                        attachment = new
+                        {
+                            type = "template",
+                            payload = new
+                            {
+                                template_type = "button",
+                                text = "📁 اختار الفئة الفرعية:",
+                                buttons = group
+                            }
+                        }
+                    }
+                };
+
+                await SendRequestAsync(payload);
+                await Task.Delay(500); // تأخير بسيط بين الرسائل
             }
         }
 
