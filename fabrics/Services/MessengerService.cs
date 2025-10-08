@@ -32,7 +32,7 @@ namespace fabrics.Services
                     var text = messageObj.GetProperty("text").GetString();
                     if (text != null)
                     {
-                        await SendTextMessageAsync(senderId, "👋 أهلاً بيك في متجرنا! اضغط على الزرار اللي يناسبك 👇");
+                        await SendTextMessageAsync(senderId, "  أهلاً بيك في متجرنا! اضغط على الزرار اللي يناسبك عشان تشوف منتجاتنا واسعارنا ");
                         await ShowMainCategoriesAsync(senderId);
                     }
                 }
@@ -67,7 +67,7 @@ namespace fabrics.Services
 
             // هنجيب فقط الكاتيجوري اللي مفيهاش "Parent Category" (يعني main)
             var mainCategories = categories
-                .Where(c => c["ParentCategory"] == null)
+.Where(c => !c.ContainsKey("ParentCategory"))
                 .Take(3) // نعرض 3 أزرار كحد أقصى
                 .Select(c => new
                 {
@@ -104,10 +104,11 @@ namespace fabrics.Services
             var categories = await _airtable.GetCategoriesAsync();
 
             var subCategories = categories
-                .Where(c =>
-                    c.ContainsKey("ParentCategory") &&
-                    c["ParentCategory"] is string[] parentArr &&
-                    parentArr.Contains(mainCategoryId))
+               .Where(c =>
+    c.TryGetValue("ParentCategory", out var parentObj) &&
+    parentObj is string[] parentArr &&
+    parentArr.Contains(mainCategoryId))
+
                 .Select(c => new
                 {
                     type = "postback",
