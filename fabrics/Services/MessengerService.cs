@@ -68,7 +68,7 @@ namespace fabrics.Services
             // هنجيب فقط الكاتيجوري اللي مفيهاش "Parent Category" (يعني main)
             var mainCategories = categories
 .Where(c => !c.ContainsKey("ParentCategory"))
-                .Take(3) // نعرض 3 أزرار كحد أقصى
+                .Take(6) // نعرض 3 أزرار كحد أقصى
                 .Select(c => new
                 {
                     type = "postback",
@@ -131,7 +131,7 @@ namespace fabrics.Services
                             {
                                 template_type = "button",
                                 text = "اختار الفئة الفرعية:",
-                                buttons = subCategories.Take(3)
+                                buttons = subCategories.Take(4)
                             }
                         }
                     }
