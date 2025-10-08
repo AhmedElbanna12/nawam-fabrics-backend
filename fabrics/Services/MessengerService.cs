@@ -75,10 +75,10 @@ namespace fabrics.Services
                     .Where(c =>
                     {
                         // لو مفيش ParentCategory أصلاً
-                        if (!c.ContainsKey("ParentCategory"))
+                        if (!c.ContainsKey("Parent Category"))
                             return true;
 
-                        var parent = c["ParentCategory"];
+                        var parent = c["Parent Category"];
 
                         // لو null أو array فاضية
                         if (parent == null)
@@ -156,10 +156,10 @@ namespace fabrics.Services
                 var subCategories = categories
                     .Where(c =>
                     {
-                        if (!c.ContainsKey("ParentCategory"))
+                        if (!c.ContainsKey("Parent Category"))
                             return false;
 
-                        var parent = c["ParentCategory"];
+                        var parent = c["Parent Category"];
 
                         // التعامل مع string array
                         if (parent is string[] parentArr)
@@ -246,10 +246,10 @@ namespace fabrics.Services
                     filtered = products
                         .Where(p =>
                         {
-                            if (!p.ContainsKey("mainCategory"))
+                            if (!p.ContainsKey("Main Category"))
                                 return false;
 
-                            var mainCat = p["mainCategory"];
+                            var mainCat = p["Main Category"];
 
                             if (mainCat is string[] mainArr)
                                 return mainArr.Contains(categoryId);
@@ -273,10 +273,10 @@ namespace fabrics.Services
                     filtered = products
                         .Where(p =>
                         {
-                            if (!p.ContainsKey("subCategory"))
+                            if (!p.ContainsKey("Sub Category"))
                                 return false;
 
-                            var subCat = p["subCategory"];
+                            var subCat = p["Sub Category"];
 
                             if (subCat is string[] subArr)
                                 return subArr.Contains(categoryId);
