@@ -17,7 +17,7 @@ namespace fabrics.Services
             _httpClientFactory = httpClientFactory;
         }
 
-        // ✅ الدالة الأساسية لمعالجة الرسائل
+        // ✅ استقبال الرسائل
         public async Task HandleMessageAsync(JsonElement body)
         {
             try
@@ -28,11 +28,10 @@ namespace fabrics.Services
 
                 if (messaging.TryGetProperty("message", out var messageObj))
                 {
-                    // أول رسالة من العميل → نرد برسالة ترحيب
                     var text = messageObj.GetProperty("text").GetString();
-                    if (text != null)
+                    if (!string.IsNullOrEmpty(text))
                     {
-                        await SendTextMessageAsync(senderId, "  أهلاً بيك في متجرنا! اضغط على الزرار اللي يناسبك عشان تشوف منتجاتنا واسعارنا ");
+                        await SendTextMessageAsync(senderId, "👋 أهلاً بيك في متجرنا! اختار الفئة اللي تناسبك:");
                         await ShowMainCategoriesAsync(senderId);
                     }
                 }
@@ -48,7 +47,7 @@ namespace fabrics.Services
             }
         }
 
-        // ✅ الرد برسالة نصية بسيطة
+        // ✅ إرسال نص
         public async Task SendTextMessageAsync(string recipientId, string text)
         {
             var payload = new
@@ -56,19 +55,15 @@ namespace fabrics.Services
                 recipient = new { id = recipientId },
                 message = new { text }
             };
-
             await SendRequestAsync(payload);
         }
 
-        // ✅ عرض الأزرار الخاصة بالمنتجات الرئيسية
+        // ✅ عرض الكاتيجوريات الرئيسية (بحد أقصى 3 في الرسالة الواحدة)
         public async Task ShowMainCategoriesAsync(string recipientId)
         {
             var categories = await _airtable.GetCategoriesAsync();
-
-            // هنجيب فقط الكاتيجوري اللي مفيهاش "Parent Category" (يعني main)
             var mainCategories = categories
-.Where(c => !c.ContainsKey("ParentCategory"))
-                .Take(6) // نعرض 3 أزرار كحد أقصى
+                .Where(c => !c.ContainsKey("ParentCategory"))
                 .Select(c => new
                 {
                     type = "postback",
@@ -77,47 +72,14 @@ namespace fabrics.Services
                 })
                 .ToList();
 
-            var payload = new
+            if (!mainCategories.Any())
             {
-                recipient = new { id = recipientId },
-                message = new
-                {
-                    attachment = new
-                    {
-                        type = "template",
-                        payload = new
-                        {
-                            template_type = "button",
-                            text = "اختار الفئة الرئيسية:",
-                            buttons = mainCategories
-                        }
-                    }
-                }
-            };
+                await SendTextMessageAsync(recipientId, "❌ لا يوجد فئات رئيسية حالياً.");
+                return;
+            }
 
-            await SendRequestAsync(payload);
-        }
-
-        // ✅ عرض الـ SubCategories عند الضغط على MainCategory
-        public async Task ShowSubCategoriesAsync(string recipientId, string mainCategoryId)
-        {
-            var categories = await _airtable.GetCategoriesAsync();
-
-            var subCategories = categories
-               .Where(c =>
-    c.TryGetValue("ParentCategory", out var parentObj) &&
-    parentObj is string[] parentArr &&
-    parentArr.Contains(mainCategoryId))
-
-                .Select(c => new
-                {
-                    type = "postback",
-                    title = c["Name"].ToString(),
-                    payload = $"SUB_{c["Id"]}"
-                })
-                .ToList();
-
-            if (subCategories.Any())
+            // ⬇️ نقسمها كل 3 أزرار في رسالة
+            foreach (var group in mainCategories.Chunk(3))
             {
                 var payload = new
                 {
@@ -130,22 +92,64 @@ namespace fabrics.Services
                             payload = new
                             {
                                 template_type = "button",
-                                text = "اختار الفئة الفرعية:",
-                                buttons = subCategories.Take(4)
+                                text = "📂 اختار الفئة الرئيسية:",
+                                buttons = group
                             }
                         }
                     }
                 };
                 await SendRequestAsync(payload);
             }
-            else
+        }
+
+        // ✅ عرض الفئات الفرعية
+        public async Task ShowSubCategoriesAsync(string recipientId, string mainCategoryId)
+        {
+            var categories = await _airtable.GetCategoriesAsync();
+
+            var subCategories = categories
+                .Where(c =>
+                    c.TryGetValue("ParentCategory", out var parentObj) &&
+                    parentObj is string[] parentArr &&
+                    parentArr.Contains(mainCategoryId))
+                .Select(c => new
+                {
+                    type = "postback",
+                    title = c["Name"].ToString(),
+                    payload = $"SUB_{c["Id"]}"
+                })
+                .ToList();
+
+            if (!subCategories.Any())
             {
                 await SendTextMessageAsync(recipientId, "❌ لا يوجد فئات فرعية لهذه الفئة.");
+                return;
+            }
+
+            foreach (var group in subCategories.Chunk(3))
+            {
+                var payload = new
+                {
+                    recipient = new { id = recipientId },
+                    message = new
+                    {
+                        attachment = new
+                        {
+                            type = "template",
+                            payload = new
+                            {
+                                template_type = "button",
+                                text = "📂 اختار الفئة الفرعية:",
+                                buttons = group
+                            }
+                        }
+                    }
+                };
+                await SendRequestAsync(payload);
             }
         }
 
-        // ✅ عرض المنتجات بناءً على SubCategory
-        // ✅ عرض المنتجات في شكل كروت (Cards)
+        // ✅ عرض المنتجات (بكروت)
         public async Task ShowProductsAsync(string recipientId, string subCategoryId)
         {
             var products = await _airtable.GetProductsAsync();
@@ -163,33 +167,21 @@ namespace fabrics.Services
                 return;
             }
 
-            // نحول المنتجات ل cards (كل كارت = منتج)
             var elements = filtered.Select(p => new
             {
                 title = p["Name"].ToString(),
                 subtitle = $"💰 السعر: {p["PricePerMeter"]} جنيه",
-                image_url = p.ContainsKey("Image") && p["Image"] is string[] images && images.Length > 0
-                    ? images[0]
-                    : "https://via.placeholder.com/400x300.png?text=No+Image", // fallback image
+                image_url = p.ContainsKey("Image") && p["Image"] is string[] imgs && imgs.Length > 0
+                    ? imgs[0]
+                    : "https://via.placeholder.com/400x300.png?text=No+Image",
                 buttons = new[]
                 {
-            new
-            {
-                type = "postback",
-                title = "📄 تفاصيل",
-                payload = $"DETAIL_{p["Id"]}"
-            }
-        }
+                    new { type = "postback", title = "📄 تفاصيل", payload = $"DETAIL_{p["Id"]}" }
+                }
             }).ToList();
 
-            // Messenger يدعم max 10 عناصر في كل message
-            var groups = elements
-                .Select((item, index) => new { item, index })
-                .GroupBy(x => x.index / 10)
-                .Select(g => g.Select(x => x.item).ToList())
-                .ToList();
-
-            foreach (var group in groups)
+            // Messenger يسمح بـ 10 كروت في الرسالة
+            foreach (var group in elements.Chunk(10))
             {
                 var payload = new
                 {
@@ -212,8 +204,7 @@ namespace fabrics.Services
             }
         }
 
-
-        // ✅ معالجه postback
+        // ✅ معالجة postback
         private async Task HandlePostbackAsync(string senderId, string payload)
         {
             if (payload.StartsWith("MAIN_"))
@@ -238,10 +229,9 @@ namespace fabrics.Services
                     await SendTextMessageAsync(senderId, details);
                 }
             }
-
         }
 
-        // ✅ دالة عامة لإرسال أي طلب إلى Graph API
+        // ✅ إرسال الطلب
         private async Task SendRequestAsync(object payload)
         {
             var httpClient = _httpClientFactory.CreateClient();
