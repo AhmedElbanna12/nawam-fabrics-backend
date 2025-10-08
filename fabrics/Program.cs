@@ -23,6 +23,10 @@ namespace fabrics
             builder.Services.AddControllers();
             builder.Services.AddSingleton<TelegramService>();
             builder.Services.AddScoped<AirtableService>();
+            builder.Services.AddScoped<MessengerService>();
+            builder.Services.AddHttpClient();
+
+
 
             builder.Services.AddCors(options =>
             {

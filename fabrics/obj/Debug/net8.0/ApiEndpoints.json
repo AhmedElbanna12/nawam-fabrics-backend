@@ -10,6 +10,48 @@
     "ReturnTypes": []
   },
   {
+    "ContainingType": "fabrics.Controllers.MessengerController",
+    "Method": "VerifyMessengerWebhook",
+    "RelativePath": "api/Messenger/webhook",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "hub_mode",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "hub_verify_token",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "hub_challenge",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "fabrics.Controllers.MessengerController",
+    "Method": "ReceiveMessengerMessage",
+    "RelativePath": "api/Messenger/webhook",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "body",
+        "Type": "System.Text.Json.JsonElement",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "fabrics.Controllers.productsController",
     "Method": "GetAll",
     "RelativePath": "api/products",
