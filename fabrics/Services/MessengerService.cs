@@ -62,8 +62,15 @@ namespace fabrics.Services
         public async Task ShowMainCategoriesAsync(string recipientId)
         {
             var categories = await _airtable.GetCategoriesAsync();
+
+            // ✅ نعرض فقط الكاتيجوري اللي الـ ParentCategory فيها null
             var mainCategories = categories
-                .Where(c => !c.ContainsKey("ParentCategory"))
+                .Where(c =>
+                    !c.ContainsKey("ParentCategory") ||
+                    c["ParentCategory"] == null ||
+                    (c["ParentCategory"] is string[] arr && arr.Length == 0)
+                )
+                .Take(6)
                 .Select(c => new
                 {
                     type = "postback",
@@ -72,46 +79,40 @@ namespace fabrics.Services
                 })
                 .ToList();
 
-            if (!mainCategories.Any())
+            var payload = new
             {
-                await SendTextMessageAsync(recipientId, "❌ لا يوجد فئات رئيسية حالياً.");
-                return;
-            }
-
-            // ⬇️ نقسمها كل 3 أزرار في رسالة
-            foreach (var group in mainCategories.Chunk(3))
-            {
-                var payload = new
+                recipient = new { id = recipientId },
+                message = new
                 {
-                    recipient = new { id = recipientId },
-                    message = new
+                    attachment = new
                     {
-                        attachment = new
+                        type = "template",
+                        payload = new
                         {
-                            type = "template",
-                            payload = new
-                            {
-                                template_type = "button",
-                                text = "📂 اختار الفئة الرئيسية:",
-                                buttons = group
-                            }
+                            template_type = "button",
+                            text = "اختار الفئة الرئيسية:",
+                            buttons = mainCategories
                         }
                     }
-                };
-                await SendRequestAsync(payload);
-            }
+                }
+            };
+
+            await SendRequestAsync(payload);
         }
+
 
         // ✅ عرض الفئات الفرعية
         public async Task ShowSubCategoriesAsync(string recipientId, string mainCategoryId)
         {
             var categories = await _airtable.GetCategoriesAsync();
 
+            // ✅ نعرض فقط الكاتيجوري اللي الـ ParentCategory فيها = mainCategoryId
             var subCategories = categories
                 .Where(c =>
-                    c.TryGetValue("ParentCategory", out var parentObj) &&
-                    parentObj is string[] parentArr &&
-                    parentArr.Contains(mainCategoryId))
+                    c.ContainsKey("ParentCategory") &&
+                    c["ParentCategory"] is string[] parentArr &&
+                    parentArr.Contains(mainCategoryId)
+                )
                 .Select(c => new
                 {
                     type = "postback",
@@ -120,13 +121,7 @@ namespace fabrics.Services
                 })
                 .ToList();
 
-            if (!subCategories.Any())
-            {
-                await SendTextMessageAsync(recipientId, "❌ لا يوجد فئات فرعية لهذه الفئة.");
-                return;
-            }
-
-            foreach (var group in subCategories.Chunk(3))
+            if (subCategories.Any())
             {
                 var payload = new
                 {
@@ -139,13 +134,17 @@ namespace fabrics.Services
                             payload = new
                             {
                                 template_type = "button",
-                                text = "📂 اختار الفئة الفرعية:",
-                                buttons = group
+                                text = "اختار الفئة الفرعية:",
+                                buttons = subCategories.Take(4)
                             }
                         }
                     }
                 };
                 await SendRequestAsync(payload);
+            }
+            else
+            {
+                await SendTextMessageAsync(recipientId, "❌ لا يوجد فئات فرعية لهذه الفئة.");
             }
         }
 
