@@ -24,7 +24,7 @@ namespace fabrics.Controllers
      [FromQuery(Name = "hub.verify_token")] string verifyToken,
      [FromQuery(Name = "hub.challenge")] string challenge)
         {
-            const string VERIFY_TOKEN = "your-verify-token"; // لازم تكون نفس اللي في Meta Developer
+            const string VERIFY_TOKEN = "my_messenger_token"; // لازم تكون نفس اللي في Meta Developer
 
             if (mode == "subscribe" && verifyToken == VERIFY_TOKEN)
             {
