@@ -22,19 +22,19 @@ namespace fabrics.Controllers
 
             // بناء hierarchy
             var mainCategories = allCategories
-                .Where(c => c["ParentCategory"] == null)
+                .Where(c => c["Parent Category"] == null)
                 .ToList();
 
             foreach (var mainCat in mainCategories)
             {
                 var subCats = allCategories
-                    .Where(c => c["ParentCategory"] is object parent && parent.ToString() == mainCat["Id"].ToString())
+                    .Where(c => c["Parent Category"] is object parent && parent.ToString() == mainCat["Id"].ToString())
                     .ToList();
 
                 foreach (var subCat in subCats)
                 {
                     subCat["Products"] = allProducts
-                        .Where(p => p["SubCategory"]?.ToString() == subCat["Id"].ToString())
+                        .Where(p => p["Sub Category"]?.ToString() == subCat["Id"].ToString())
                         .ToList();
                 }
 
