@@ -18,12 +18,23 @@ namespace fabrics.Controllers
         }
 
         [HttpGet]
-        public IActionResult VerifyWebhook([FromQuery] string hub_mode, [FromQuery] string hub_challenge, [FromQuery] string hub_verify_token)
+        public IActionResult VerifyWebhook([FromQuery(Name = "hub.mode")] string mode,
+                                   [FromQuery(Name = "hub.verify_token")] string verifyToken,
+                                   [FromQuery(Name = "hub.challenge")] string challenge)
         {
-            if (hub_mode == "subscribe" && hub_verify_token == "my_messenger_token")
-                return Ok(hub_challenge);
-            return Forbid();
+            const string VERIFY_TOKEN = "my_messenger_token";
+
+            if (mode == "subscribe" && verifyToken == VERIFY_TOKEN)
+            {
+                Console.WriteLine("Webhook verified successfully!");
+                return Ok(challenge);
+            }
+            else
+            {
+                return Forbid();
+            }
         }
+
 
         [HttpPost]
         public async Task<IActionResult> Receive([FromBody] JsonElement body)
