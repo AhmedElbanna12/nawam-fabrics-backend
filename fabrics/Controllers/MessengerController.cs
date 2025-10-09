@@ -20,7 +20,7 @@ namespace fabrics.Controllers
         [HttpGet]
         public IActionResult VerifyWebhook([FromQuery] string hub_mode, [FromQuery] string hub_challenge, [FromQuery] string hub_verify_token)
         {
-            if (hub_mode == "subscribe" && hub_verify_token == "YOUR_VERIFY_TOKEN")
+            if (hub_mode == "subscribe" && hub_verify_token == "my_messenger_token")
                 return Ok(hub_challenge);
             return Forbid();
         }
