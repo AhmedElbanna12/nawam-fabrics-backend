@@ -32,6 +32,7 @@ namespace fabrics.Services
             _baseId = config["Airtable:BaseId"];
             _categoriesTableName = "Categories";
             _productsTableName = "Products";
+            _airtableBase = new AirtableBase(_apiKey, _baseId);
 
         }
 
