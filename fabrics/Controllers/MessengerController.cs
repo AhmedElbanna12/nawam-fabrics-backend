@@ -97,25 +97,43 @@ namespace fabrics.Controllers
         // ✅ إرسال التصنيفات الرئيسية
         private async Task SendMainCategories(string senderId)
         {
-            try
-            {
-                var mainCategories = await _airtableService.GetMainCategoriesAsync();
+            var mainCategories = await _airtableService.GetMainCategoriesAsync();
 
-                var buttons = mainCategories.Select(cat => new Button
+            // Check if categories were found
+            if (mainCategories == null || !mainCategories.Any())
+            {
+                await _messenger.SendTextAsync(senderId, "No categories available.");
+                return;
+            }
+
+            var elements = new List<GenericTemplateElement>();
+
+            // Create one element ("bubble") in the generic template for each main category
+            foreach (var category in mainCategories)
+            {
+                var element = new GenericTemplateElement
+                {
+                    Title = category.Name,
+                    // Add other properties like subtitle or image_url if available
+                    Buttons = new List<Button>
+            {
+                // Each element can have up to 3 buttons.
+                // Here, using one button per category to view its sub-categories.
+                new Button
                 {
                     Type = "postback",
-                    Title = cat.Name,
-                    Payload = $"MAIN_CATEGORY_{cat.Id}"
-                }).ToList();
+                    Title = "View Subcategories",
+                    Payload = $"MAIN_CATEGORY_{category.Id}"
+                }
+            }
+                };
+                elements.Add(element);
+            }
 
-                await _messenger.SendButtonsAsync(senderId, "🏷️ اختر التصنيف الرئيسي:", buttons);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error sending main categories");
-                await _messenger.SendTextAsync(senderId, "❌ حدث خطأ في جلب التصنيفات. حاول مرة أخرى.");
-            }
+            // Send the categories as a generic template carousel
+            await _messenger.SendGenericTemplateAsync(senderId, elements);
         }
+        
 
         // ✅ معالجة Postback (ضغط الأزرار)
         private async Task HandlePostback(string senderId, string payload)
