@@ -72,27 +72,24 @@ namespace fabrics.Services
 
                 // ✅ نجيب الكاتيجوري الرئيسية (اللي مالهاش ParentCategory)
                 var mainCategories = categories
-                    .Where(c =>
-                    {
-                        // لو مفيش ParentCategory أصلاً
-                        if (!c.ContainsKey("Parent Category"))
-                            return true;
+     .Where(c =>
+     {
+         if (!c.ContainsKey("Parent Category"))
+             return true;
 
-                        var parent = c["Parent Category"];
+         var parent = c["Parent Category"];
 
-                        // لو null أو array فاضية
-                        if (parent == null)
-                            return true;
+         // لو array فاضية = رئيسية
+         if (parent is string[] arr && arr.Length == 0)
+             return true;
 
-                        if (parent is string[] arr && arr.Length == 0)
-                            return true;
+         if (parent is JsonElement jsonEl && jsonEl.ValueKind == JsonValueKind.Array && jsonEl.GetArrayLength() == 0)
+             return true;
 
-                        if (parent is JsonElement jsonEl && jsonEl.ValueKind == JsonValueKind.Array && jsonEl.GetArrayLength() == 0)
-                            return true;
+         return false; // عندها parent = فرعية
+     })
+     .ToList();
 
-                        return false;
-                    })
-                    .ToList();
 
                 if (!mainCategories.Any())
                 {
