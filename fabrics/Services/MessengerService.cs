@@ -74,10 +74,10 @@ namespace fabrics.Services
                 var mainCategories = categories
      .Where(c =>
      {
-         if (!c.ContainsKey("Parent Category"))
+         if (!c.ContainsKey("ParentCategory"))
              return true;
 
-         var parent = c["Parent Category"];
+         var parent = c["ParentCategory"];
 
          // لو array فاضية = رئيسية
          if (parent is string[] arr && arr.Length == 0)
@@ -153,10 +153,10 @@ namespace fabrics.Services
                 var subCategories = categories
                     .Where(c =>
                     {
-                        if (!c.ContainsKey("Parent Category"))
+                        if (!c.ContainsKey("ParentCategory"))
                             return false;
 
-                        var parent = c["Parent Category"];
+                        var parent = c["ParentCategory"];
 
                         // التعامل مع string array
                         if (parent is string[] parentArr)
@@ -243,10 +243,10 @@ namespace fabrics.Services
                     filtered = products
                         .Where(p =>
                         {
-                            if (!p.ContainsKey("Main Category"))
+                            if (!p.ContainsKey("MainCategory"))
                                 return false;
 
-                            var mainCat = p["Main Category"];
+                            var mainCat = p["MainCategory"];
 
                             if (mainCat is string[] mainArr)
                                 return mainArr.Contains(categoryId);
@@ -270,10 +270,10 @@ namespace fabrics.Services
                     filtered = products
                         .Where(p =>
                         {
-                            if (!p.ContainsKey("Sub Category"))
+                            if (!p.ContainsKey("SubCategory"))
                                 return false;
 
-                            var subCat = p["Sub Category"];
+                            var subCat = p["SubCategory"];
 
                             if (subCat is string[] subArr)
                                 return subArr.Contains(categoryId);
