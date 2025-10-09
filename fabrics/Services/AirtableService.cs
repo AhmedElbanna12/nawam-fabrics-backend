@@ -30,52 +30,180 @@ namespace fabrics.Services
         public async Task<List<Dictionary<string, object>>> GetProductsAsync()
         {
             var products = new List<Dictionary<string, object>>();
-
             try
             {
                 using var airtableBase = GetBase();
 
-                // 1️⃣ جلب كل Categories عشان نعمل dictionary للـ ID -> Name
+                // 1️⃣ جلب Categories
                 var categoriesResponse = await airtableBase.ListRecords("Categories");
                 var categoriesDict = new Dictionary<string, string>();
 
                 if (categoriesResponse.Success)
                 {
+                    Console.WriteLine("=== Categories Loaded ===");
                     foreach (var cat in categoriesResponse.Records)
                     {
                         var catName = cat.GetField<string>("Name");
                         categoriesDict[cat.Id] = catName;
+                        Console.WriteLine($"ID: '{cat.Id}' -> Name: '{catName}'");
                     }
+                    Console.WriteLine($"\nTotal: {categoriesDict.Count} categories\n");
                 }
 
-                // 2️⃣ جلب كل Products
+                // 2️⃣ جلب Products
                 var response = await airtableBase.ListRecords("Products");
 
                 if (response.Success)
                 {
+                    Console.WriteLine("=== Products ===");
                     foreach (var record in response.Records)
                     {
                         try
                         {
-                            // 3️⃣ linked records: Main & Sub Category
-                            var mainCategoryIds = record.GetField<List<string>>("MainCategory") ?? new List<string>();
-                            var subCategoryIds = record.GetField<List<string>>("SubCategory") ?? new List<string>();
+                            var productName = record.GetField<string>("Name");
+                            Console.WriteLine($"\n📦 Product: {productName}");
 
-                            var mainCategoryName = mainCategoryIds.FirstOrDefault() != null &&
-                                                   categoriesDict.ContainsKey(mainCategoryIds.First())
-                                                   ? categoriesDict[mainCategoryIds.First()]
-                                                   : null;
+                            // طباعة RAW data من Airtable
+                            if (record.Fields.ContainsKey("MainCategory"))
+                            {
+                                var rawMain = record.Fields["MainCategory"];
+                                Console.WriteLine($"MainCategory RAW Type: {rawMain?.GetType().FullName ?? "null"}");
+                                Console.WriteLine($"MainCategory RAW Value: {System.Text.Json.JsonSerializer.Serialize(rawMain)}");
+                            }
+                            else
+                            {
+                                Console.WriteLine("⚠️ MainCategory field NOT FOUND in record.Fields");
+                            }
 
-                            var subCategoryName = subCategoryIds.FirstOrDefault() != null &&
-                                                  categoriesDict.ContainsKey(subCategoryIds.First())
-                                                  ? categoriesDict[subCategoryIds.First()]
+                            if (record.Fields.ContainsKey("SubCategory"))
+                            {
+                                var rawSub = record.Fields["SubCategory"];
+                                Console.WriteLine($"SubCategory RAW Type: {rawSub?.GetType().FullName ?? "null"}");
+                                Console.WriteLine($"SubCategory RAW Value: {System.Text.Json.JsonSerializer.Serialize(rawSub)}");
+                            }
+                            else
+                            {
+                                Console.WriteLine("⚠️ SubCategory field NOT FOUND in record.Fields");
+                            }
+
+                            // جرب قراءة بطرق مختلفة
+                            List<string> mainCategoryIds = null;
+                            List<string> subCategoryIds = null;
+
+                            // محاولة 1: List<string>
+                            try
+                            {
+                                mainCategoryIds = record.GetField<List<string>>("MainCategory");
+                                Console.WriteLine($"✓ Read as List<string>: {mainCategoryIds?.Count ?? 0} items");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"✗ List<string> failed: {ex.Message}");
+
+                                // محاولة 2: string[]
+                                try
+                                {
+                                    var arr = record.GetField<string[]>("MainCategory");
+                                    mainCategoryIds = arr?.ToList();
+                                    Console.WriteLine($"✓ Read as string[]: {mainCategoryIds?.Count ?? 0} items");
+                                }
+                                catch (Exception ex2)
+                                {
+                                    Console.WriteLine($"✗ string[] failed: {ex2.Message}");
+
+                                    // محاولة 3: dynamic/object
+                                    try
+                                    {
+                                        if (record.Fields.ContainsKey("MainCategory"))
+                                        {
+                                            var obj = record.Fields["MainCategory"];
+                                            if (obj is System.Text.Json.JsonElement jsonElement)
+                                            {
+                                                Console.WriteLine($"It's a JsonElement! Kind: {jsonElement.ValueKind}");
+                                                if (jsonElement.ValueKind == System.Text.Json.JsonValueKind.Array)
+                                                {
+                                                    mainCategoryIds = new List<string>();
+                                                    foreach (var item in jsonElement.EnumerateArray())
+                                                    {
+                                                        mainCategoryIds.Add(item.GetString());
+                                                    }
+                                                    Console.WriteLine($"✓ Extracted from JsonElement: {mainCategoryIds.Count} items");
+                                                }
+                                            }
+                                        }
+                                    }
+                                    catch (Exception ex3)
+                                    {
+                                        Console.WriteLine($"✗ JsonElement failed: {ex3.Message}");
+                                    }
+                                }
+                            }
+
+                            // نفس الشيء للـ SubCategory
+                            try
+                            {
+                                subCategoryIds = record.GetField<List<string>>("SubCategory");
+                                Console.WriteLine($"✓ SubCategory as List<string>: {subCategoryIds?.Count ?? 0} items");
+                            }
+                            catch
+                            {
+                                try
+                                {
+                                    var arr = record.GetField<string[]>("SubCategory");
+                                    subCategoryIds = arr?.ToList();
+                                    Console.WriteLine($"✓ SubCategory as string[]: {subCategoryIds?.Count ?? 0} items");
+                                }
+                                catch { }
+                            }
+
+                            // طباعة الـ IDs
+                            if (mainCategoryIds != null && mainCategoryIds.Any())
+                            {
+                                Console.WriteLine($"MainCategory IDs found:");
+                                foreach (var id in mainCategoryIds)
+                                {
+                                    var exists = categoriesDict.ContainsKey(id);
+                                    var name = exists ? categoriesDict[id] : "NOT FOUND";
+                                    Console.WriteLine($"  '{id}' -> {name} {(exists ? "✓" : "✗")}");
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("⚠️ No MainCategory IDs extracted");
+                            }
+
+                            if (subCategoryIds != null && subCategoryIds.Any())
+                            {
+                                Console.WriteLine($"SubCategory IDs found:");
+                                foreach (var id in subCategoryIds)
+                                {
+                                    var exists = categoriesDict.ContainsKey(id);
+                                    var name = exists ? categoriesDict[id] : "NOT FOUND";
+                                    Console.WriteLine($"  '{id}' -> {name} {(exists ? "✓" : "✗")}");
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("⚠️ No SubCategory IDs extracted");
+                            }
+
+                            // استخراج الأسماء
+                            var mainCategoryName = mainCategoryIds?.FirstOrDefault() != null &&
+                                                  categoriesDict.ContainsKey(mainCategoryIds.First())
+                                                  ? categoriesDict[mainCategoryIds.First()]
                                                   : null;
 
-                            // 4️⃣ إنشاء Dictionary للمنتج
+                            var subCategoryName = subCategoryIds?.FirstOrDefault() != null &&
+                                                 categoriesDict.ContainsKey(subCategoryIds.First())
+                                                 ? categoriesDict[subCategoryIds.First()]
+                                                 : null;
+
+                            Console.WriteLine($"RESULT -> Main: '{mainCategoryName}', Sub: '{subCategoryName}'");
+
                             var product = new Dictionary<string, object>
                             {
                                 ["Id"] = record.Id,
-                                ["Name"] = record.GetField<string>("Name"),
+                                ["Name"] = productName,
                                 ["PricePerMeter"] = record.GetField<double?>("PricePerMeter"),
                                 ["Description"] = record.GetField<string>("Description"),
                                 ["MainCategory"] = mainCategoryName,
@@ -86,19 +214,18 @@ namespace fabrics.Services
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Error processing product {record.Id}: {ex.Message}");
+                            Console.WriteLine($"❌ Error: {ex.Message}");
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR in GetProductsAsync: {ex.Message}");
+                Console.WriteLine($"❌ FATAL ERROR: {ex.Message}");
             }
 
             return products;
         }
-
 
         public async Task<List<Dictionary<string, object>>> GetCategoriesAsync()
         {
