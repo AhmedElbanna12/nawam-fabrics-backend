@@ -4,7 +4,7 @@ using System.Text.Json;
 
 namespace fabrics.Controllers
 {
-    [Route("webhook")]
+    [Route("api/messenger/webhook")]
     [ApiController]
     public class MessengerController : ControllerBase
     {
