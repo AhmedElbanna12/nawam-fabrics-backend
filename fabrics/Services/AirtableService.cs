@@ -1,6 +1,5 @@
 ﻿using AirtableApiClient;
 using fabrics.Dtos;
-using fabrics.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Text;
@@ -8,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using AirtableApiClient;
 using DocumentFormat.OpenXml.Spreadsheet;
+using fabrics.Models;
 
 
 namespace fabrics.Services
@@ -30,91 +30,66 @@ namespace fabrics.Services
         private AirtableBase GetBase() => new AirtableBase(_apiKey, _baseId);
 
         // جلب كل المنتجات
+
         public async Task<List<Dictionary<string, object>>> GetProductsAsync()
         {
             var products = new List<Dictionary<string, object>>();
-            try
+            using var airtableBase = GetBase();
+
+            var response = await airtableBase.ListRecords("Products");
+
+            if (response.Success)
             {
-                using var airtableBase = GetBase();
-
-                // 1️⃣ جلب Categories
-                var categoriesResponse = await airtableBase.ListRecords("Categories");
-                var categoriesDict = new Dictionary<string, string>();
-
-                if (categoriesResponse.Success)
+                foreach (var record in response.Records)
                 {
-                    foreach (var cat in categoriesResponse.Records)
+                    var product = new Dictionary<string, object>
                     {
-                        var catName = cat.GetField<string>("Name");
-                        categoriesDict[cat.Id] = catName;
-                    }
+                        ["Id"] = record.Id,
+                        ["Name"] = record.GetField<string>("Name"),
+                        ["PricePerMeter"] = record.GetField<double?>("PricePerMeter"),
+                        ["MainCategoryId"] = record.GetField<List<string>>("MainCategory")?.FirstOrDefault(),
+                        ["SubCategoryId"] = record.GetField<List<string>>("SubCategory")?.FirstOrDefault()
+                    };
+                    products.Add(product);
                 }
-
-                // 2️⃣ جلب Products
-                var response = await airtableBase.ListRecords("Products");
-
-                if (response.Success)
-                {
-                    foreach (var record in response.Records)
-                    {
-                        var productName = record.GetField<string>("Name");
-                        var mainCatId = record.GetField<string>("MainCategory");
-                        var subCatId = record.GetField<string>("SubCategory");
-
-                        var mainCategoryName = mainCatId != null && categoriesDict.ContainsKey(mainCatId)
-                                               ? categoriesDict[mainCatId]
-                                               : null;
-                        var subCategoryName = subCatId != null && categoriesDict.ContainsKey(subCatId)
-                                              ? categoriesDict[subCatId]
-                                              : null;
-
-                        var product = new Dictionary<string, object>
-                        {
-                            ["Id"] = record.Id,
-                            ["Name"] = productName,
-                            ["PricePerMeter"] = record.GetField<double?>("PricePerMeter"),
-                            ["Description"] = record.GetField<string>("Description"),
-                            ["MainCategory"] = mainCategoryName,
-                            ["SubCategory"] = subCategoryName
-                        };
-
-                        products.Add(product);
-                    }
-                }
-               
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"ERROR in GetProductsAsync: {ex.Message}");
             }
 
             return products;
         }
+    
 
-
-        public async Task<List<Dictionary<string, object>>> GetCategoriesAsync()
+        public async Task<(List<AirtableCategory> parents, List<AirtableCategory> subs)> GetCategoriesAsync()
         {
-            var categories = new List<Dictionary<string, object>>();
+            var categories = new List<AirtableCategory>();
             using var airtableBase = GetBase();
+
             var response = await airtableBase.ListRecords("Categories");
 
             if (response.Success)
             {
                 foreach (var record in response.Records)
                 {
-                    var cat = new Dictionary<string, object>
+                    var category = new AirtableCategory
                     {
-                        ["Id"] = record.Id,
-                        ["Name"] = record.GetField("Name"),
-                        ["Description"] = record.GetField("Description"),
-                        ["ParentCategory"] = record.GetField("ParentCategory")
+                        Id = record.Id,
+                        Name = record.GetField<string>("Name"),
+                        ParentCategoryIds = record.GetField<List<string>>("ParentCategory")
                     };
-                    categories.Add(cat);
+                    categories.Add(category);
                 }
             }
 
-            return categories;
+            var parentCategories = categories
+                .Where(c => c.ParentCategoryIds == null || c.ParentCategoryIds.Count == 0)
+                .ToList();
+
+            var subCategories = categories
+                .Where(c => c.ParentCategoryIds != null && c.ParentCategoryIds.Count > 0)
+                .ToList();
+
+            return (parentCategories, subCategories);
         }
+
 
         // ✅ دالة تجيب اسم المنتج من Airtable بالـ Record ID
         public async Task<string> GetProductNameByIdAsync(string recordId)

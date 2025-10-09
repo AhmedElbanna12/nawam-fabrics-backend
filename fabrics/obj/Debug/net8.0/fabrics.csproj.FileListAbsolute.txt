@@ -39,3 +39,6 @@ E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\Telegram.Bot.
 E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\Docker.DotNet.dll
 E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\Newtonsoft.Json.dll
 E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\vendors.json
+E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\DocumentFormat.OpenXml.dll
+E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\DocumentFormat.OpenXml.Framework.dll
+E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\System.IO.Packaging.dll
