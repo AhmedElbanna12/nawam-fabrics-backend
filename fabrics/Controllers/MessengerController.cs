@@ -1,129 +1,256 @@
-﻿//using fabrics.Services;
-//using Microsoft.AspNetCore.Mvc;
-//using System.Text.Json;
+﻿using fabrics.Models;
+using fabrics.Services;
+using fabrics.Services.Interface;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
-//namespace fabrics.Controllers
-//{
-//    [Route("api/messenger/webhook")]
-//    [ApiController]
-//    public class MessengerController : ControllerBase
-//    {
-//        private readonly MessengerService _messenger;
-//        private readonly AirtableService _airtable;
+namespace fabrics.Controllers
+{
+    [Route("api/messenger/webhook")]
+    [ApiController]
+    public class MessengerController : ControllerBase
+    {
+        private readonly MessengerService _messenger;
+        private readonly IAirtableService _airtableService;
+        private readonly ILogger<MessengerController> _logger;
 
-//        public MessengerController(MessengerService messenger, AirtableService airtable)
-//        {
-//            _messenger = messenger;
-//            _airtable = airtable;
-//        }
+        public MessengerController(MessengerService messenger, IAirtableService airtableService, ILogger<MessengerController> logger)
+        {
+            _messenger = messenger;
+            _airtableService = airtableService;
+            _logger = logger;
+        }
 
-//        [HttpGet]
-//        public IActionResult VerifyWebhook([FromQuery(Name = "hub.mode")] string mode,
-//                                   [FromQuery(Name = "hub.verify_token")] string verifyToken,
-//                                   [FromQuery(Name = "hub.challenge")] string challenge)
-//        {
-//            const string VERIFY_TOKEN = "my_messenger_token";
+        // ✅ التحقق من الـ Webhook
+        [HttpGet]
+        public IActionResult VerifyWebhook(
+            [FromQuery(Name = "hub.mode")] string mode,
+            [FromQuery(Name = "hub.verify_token")] string verifyToken,
+            [FromQuery(Name = "hub.challenge")] string challenge)
+        {
+            const string VERIFY_TOKEN = "my_messenger_token";
 
-//            if (mode == "subscribe" && verifyToken == VERIFY_TOKEN)
-//            {
-//                Console.WriteLine("Webhook verified successfully!");
-//                return Ok(challenge);
-//            }
-//            else
-//            {
-//                return Forbid();
-//            }
-//        }
+            _logger.LogInformation($"Webhook verification: Mode={mode}, Token={verifyToken}");
 
+            if (mode == "subscribe" && verifyToken == VERIFY_TOKEN)
+            {
+                _logger.LogInformation("Webhook verified successfully!");
+                return Ok(challenge);
+            }
+            else
+            {
+                _logger.LogWarning("Webhook verification failed!");
+                return Forbid();
+            }
+        }
 
-//        [HttpPost]
-//        public async Task<IActionResult> Receive([FromBody] JsonElement body)
-//        {
-//            try
-//            {
-//                Console.WriteLine("📩 Webhook received:");
-//                Console.WriteLine(body);
+        // ✅ استقبال الرسائل من المستخدمين
+        [HttpPost]
+        public async Task<IActionResult> Receive([FromBody] JsonElement body)
+        {
+            try
+            {
+                _logger.LogInformation("📩 Messenger webhook received");
 
-//                if (!body.TryGetProperty("entry", out var entries))
-//                    return BadRequest("Missing 'entry'");
+                if (!body.TryGetProperty("entry", out var entries))
+                    return BadRequest("Missing 'entry'");
 
-//                foreach (var entry in entries.EnumerateArray())
-//                {
-//                    if (!entry.TryGetProperty("messaging", out var messagingArray))
-//                        continue;
+                foreach (var entry in entries.EnumerateArray())
+                {
+                    if (!entry.TryGetProperty("messaging", out var messagingArray))
+                        continue;
 
-//                    foreach (var messaging in messagingArray.EnumerateArray())
-//                    {
-//                        var senderId = messaging.GetProperty("sender").GetProperty("id").GetString();
+                    foreach (var messaging in messagingArray.EnumerateArray())
+                    {
+                        var senderId = messaging.GetProperty("sender").GetProperty("id").GetString();
 
-//                        // 🟢 إذا كانت رسالة نصية
-//                        if (messaging.TryGetProperty("message", out var message))
-//                        {
-//                            var text = message.TryGetProperty("text", out var textProp) ? textProp.GetString() : "";
-//                            Console.WriteLine($"👤 Received message from {senderId}: {text}");
+                        // 🟢 إذا كانت رسالة نصية من المستخدم
+                        if (messaging.TryGetProperty("message", out var message))
+                        {
+                            var text = message.TryGetProperty("text", out var textProp) ? textProp.GetString() : "";
+                            _logger.LogInformation($"👤 Message from {senderId}: {text}");
 
-//                            var (parents, _) = await _airtable.GetCategoriesAsync();
-//                            var buttons = parents.Select(p => (object)new
-//                            {
-//                                type = "postback",
-//                                title = p.Name,
-//                                payload = $"PARENT_{p.Id}"
-//                            }).ToList();
+                            // إرسال التصنيفات الرئيسية كأزرار
+                            await SendMainCategories(senderId);
+                        }
 
-//                            await _messenger.SendButtonsAsync(senderId, "اختر نوع القماش:", buttons);
-//                        }
+                        // 🟡 إذا كانت postback (ضغط على زر)
+                        else if (messaging.TryGetProperty("postback", out var postback))
+                        {
+                            var payload = postback.GetProperty("payload").GetString();
+                            _logger.LogInformation($"🟨 Postback from {senderId}: {payload}");
 
-//                        // 🟡 إذا كانت postback
-//                        else if (messaging.TryGetProperty("postback", out var postback))
-//                        {
-//                            var payload = postback.GetProperty("payload").GetString();
-//                            Console.WriteLine($"🟨 Received postback: {payload}");
+                            await HandlePostback(senderId, payload);
+                        }
+                    }
+                }
 
-//                            if (payload.StartsWith("PARENT_"))
-//                            {
-//                                var parentId = payload.Replace("PARENT_", "");
-//                                var (_, subs) = await _airtable.GetCategoriesAsync();
+                return Ok("EVENT_RECEIVED");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "❌ Webhook processing error");
+                return StatusCode(500, new { error = ex.Message });
+            }
+        }
 
-//                                var subForParent = subs.Where(s => s.ParentCategoryIds.Contains(parentId)).ToList();
-//                                var buttons = subForParent.Select(s => new MessengerButton
-//                                {
-//                                    type = "postback",
-//                                    title = s.Name,
-//                                    payload = $"SUB_{parentId}_{s.Id}"
-//                                }).ToList();
+        // ✅ إرسال التصنيفات الرئيسية
+        private async Task SendMainCategories(string senderId)
+        {
+            try
+            {
+                var mainCategories = await _airtableService.GetMainCategoriesAsync();
 
+                var buttons = mainCategories.Select(cat => new Button
+                {
+                    Type = "postback",
+                    Title = cat.Name,
+                    Payload = $"MAIN_CATEGORY_{cat.Id}"
+                }).ToList();
 
-//                                await _messenger.SendButtonsAsync(senderId, "اختر النوع الفرعي:", buttons);
-//                            }
-//                            else if (payload.StartsWith("SUB_"))
-//                            {
-//                                var parts = payload.Split('_');
-//                                var parentId = parts[1];
-//                                var subId = parts[2];
+                await _messenger.SendButtonsAsync(senderId, "🏷️ اختر التصنيف الرئيسي:", buttons);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending main categories");
+                await _messenger.SendTextAsync(senderId, "❌ حدث خطأ في جلب التصنيفات. حاول مرة أخرى.");
+            }
+        }
 
-//                                var products = await _airtable.GetProductsAsync();
-//                                var filtered = products
-//                                    .Where(p => (string)p["MainCategoryId"] == parentId && (string)p["SubCategoryId"] == subId)
-//                                    .ToList();
+        // ✅ معالجة Postback (ضغط الأزرار)
+        private async Task HandlePostback(string senderId, string payload)
+        {
+            try
+            {
+                if (payload.StartsWith("MAIN_CATEGORY_"))
+                {
+                    var mainCategoryId = payload.Replace("MAIN_CATEGORY_", "");
+                    await SendSubCategories(senderId, mainCategoryId);
+                }
+                else if (payload.StartsWith("SUB_CATEGORY_"))
+                {
+                    var parts = payload.Replace("SUB_CATEGORY_", "").Split('_');
+                    if (parts.Length == 2)
+                    {
+                        var mainCategoryId = parts[0];
+                        var subCategoryId = parts[1];
+                        await SendProducts(senderId, subCategoryId);
+                    }
+                }
+                else if (payload == "BACK_TO_MAIN")
+                {
+                    await SendMainCategories(senderId);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error handling postback: {payload}");
+                await _messenger.SendTextAsync(senderId, "❌ حدث خطأ. حاول مرة أخرى.");
+            }
+        }
 
-//                                var text = filtered.Count > 0
-//                                    ? string.Join("\n", filtered.Select(p => $"📦 {p["Name"]} - {p["PricePerMeter"]} جنيه"))
-//                                    : "❌ لا توجد منتجات في هذا القسم.";
+        // ✅ إرسال التصنيفات الفرعية
+        private async Task SendSubCategories(string senderId, string mainCategoryId)
+        {
+            try
+            {
+                var subCategories = await _airtableService.GetSubCategoriesAsync(mainCategoryId);
 
-//                                await _messenger.SendTextAsync(senderId, text);
-//                            }
-//                        }
-//                    }
-//                }
+                var buttons = new List<Button>();
 
-//                return Ok();
-//            }
-//            catch (Exception ex)
-//            {
-//                Console.WriteLine("❌ Webhook error: " + ex.Message);
-//                Console.WriteLine(ex.StackTrace);
-//                return StatusCode(500, new { error = ex.Message });
-//            }
-//        }
-//    }
-//}
+                // إضافة أزرار التصنيفات الفرعية
+                foreach (var subCat in subCategories)
+                {
+                    buttons.Add(new Button
+                    {
+                        Type = "postback",
+                        Title = subCat.Name,
+                        Payload = $"SUB_CATEGORY_{mainCategoryId}_{subCat.Id}"
+                    });
+                }
+
+                // إضافة زر للعودة للتصنيفات الرئيسية
+                buttons.Add(new Button
+                {
+                    Type = "postback",
+                    Title = "🔙 العودة للرئيسية",
+                    Payload = "BACK_TO_MAIN"
+                });
+
+                await _messenger.SendButtonsAsync(senderId, "📂 اختر التصنيف الفرعي:", buttons);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending subcategories for main category {mainCategoryId}");
+                await _messenger.SendTextAsync(senderId, "❌ حدث خطأ في جلب التصنيفات الفرعية.");
+            }
+        }
+
+        // ✅ إرسال المنتجات
+        private async Task SendProducts(string senderId, string categoryId)
+        {
+            try
+            {
+                var products = await _airtableService.GetProductsByCategoryAsync(categoryId);
+
+                if (products == null || !products.Any())
+                {
+                    await _messenger.SendTextAsync(senderId, "❌ لا توجد منتجات في هذا التصنيف.");
+                    await SendMainCategories(senderId);
+                    return;
+                }
+
+                // إذا كان هناك منتج واحد فقط، أرسله كنص عادي
+                if (products.Count == 1)
+                {
+                    var product = products.First();
+                    var message = $"🛍️ {product.Name}\n" +
+                                 $"📝 {product.Description}\n" +
+                                 $"💰 السعر: {product.Price} جنيه\n" +
+                                 $"🏷️ التصنيف: {await GetCategoryName(product.Category?.FirstOrDefault())}";
+
+                    await _messenger.SendTextAsync(senderId, message);
+                }
+                else
+                {
+                    // إرسال المنتجات كـ Generic Template (carousel)
+                    var elements = products.Select(product => new GenericTemplateElement
+                    {
+                        Title = product.Name,
+                        Subtitle = $"{product.Price} جنيه - {product.Description}",
+                        ImageUrl = product.ImageUrl,
+                        Buttons = new List<Button>
+                        {
+                            new Button { Type = "postback", Title = "📞 طلب المنتج", Payload = $"ORDER_{product.Id}" },
+                            new Button { Type = "postback", Title = "🔙 العودة", Payload = "BACK_TO_MAIN" }
+                        }
+                    }).ToList();
+
+                    await _messenger.SendGenericTemplateAsync(senderId, elements);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error sending products for category {categoryId}");
+                await _messenger.SendTextAsync(senderId, "❌ حدث خطأ في جلب المنتجات.");
+            }
+        }
+
+        // ✅ دالة مساعدة للحصول على اسم التصنيف
+        private async Task<string> GetCategoryName(string categoryId)
+        {
+            if (string.IsNullOrEmpty(categoryId)) return "غير محدد";
+
+            try
+            {
+                var categories = await _airtableService.GetAllCategoriesAsync();
+                var category = categories.FirstOrDefault(c => c.Id == categoryId);
+                return category?.Name ?? "غير محدد";
+            }
+            catch
+            {
+                return "غير محدد";
+            }
+        }
+    }
+}
