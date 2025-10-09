@@ -81,8 +81,8 @@ namespace fabrics.Services
                                 ["Name"] = record.GetField("Name"),
                                 ["PricePerMeter"] = record.GetField("PricePerMeter"),
                                 ["Description"] = record.GetField("Description"),
-                                ["Main Category"] = mainCategoryName,
-                                ["Sub Category"] = subCategoryName
+                                ["MainCategory"] = mainCategoryName,
+                                ["SubCategory"] = subCategoryName
                             };
 
                             products.Add(product);
@@ -118,7 +118,7 @@ namespace fabrics.Services
                         ["Id"] = record.Id,
                         ["Name"] = record.GetField("Name"),
                         ["Description"] = record.GetField("Description"),
-                        ["Parent Category"] = record.GetField("Parent Category")
+                        ["ParentCategory"] = record.GetField("ParentCategory")
                     };
                     categories.Add(cat);
                 }
