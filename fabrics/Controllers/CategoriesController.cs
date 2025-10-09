@@ -1,6 +1,4 @@
-﻿using fabrics.Models;
-using fabrics.Services;
-using Microsoft.AspNetCore.Http;
+﻿using fabrics.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace fabrics.Controllers
@@ -10,29 +8,37 @@ namespace fabrics.Controllers
     public class CategoriesController : ControllerBase
     {
         private readonly AirtableService _air;
-        public CategoriesController(AirtableService air) => _air = air;
+
+        public CategoriesController(AirtableService air)
+        {
+            _air = air;
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var allCategoriesDict = await _air.GetCategoriesAsync(); // بيرجع List<Dictionary<string, object>>
-
-            // تحويل الـ Dictionary لكائن Category
-            var allCategories = allCategoriesDict.Select(d => new Category
-            {
-                Id = d["Id"].ToString(),
-                Name = d["Name"].ToString(),
-                Description = d.ContainsKey("Description") ? d["Description"]?.ToString() : null,
-                ParentCategory = d.ContainsKey("ParentCategory") ? d["ParentCategory"]?.ToString() : null
-            }).ToList();
+            var allCategories = await _air.GetCategoriesAsync();
+            var allProducts = await _air.GetProductsAsync();
 
             // بناء hierarchy
-            var mainCategories = allCategories.Where(c => c.ParentCategory == null).ToList();
+            var mainCategories = allCategories
+                .Where(c => c["ParentCategory"] == null)
+                .ToList();
+
             foreach (var mainCat in mainCategories)
             {
-                mainCat.SubCategories = allCategories
-                    .Where(c => c.ParentCategory == mainCat.Id)
+                var subCats = allCategories
+                    .Where(c => c["ParentCategory"] is object parent && parent.ToString() == mainCat["Id"].ToString())
                     .ToList();
+
+                foreach (var subCat in subCats)
+                {
+                    subCat["Products"] = allProducts
+                        .Where(p => p["SubCategory"]?.ToString() == subCat["Id"].ToString())
+                        .ToList();
+                }
+
+                mainCat["SubCategories"] = subCats;
             }
 
             return Ok(mainCategories);

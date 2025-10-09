@@ -55,8 +55,8 @@ namespace fabrics.Services
                     {
                         try
                         {
-                            var mainCategoryIds = record.GetField<string[]>("MainCategory");
-                            var subCategoryIds = record.GetField<string[]>("subCategory");
+                            var mainCategoryIds = record.GetField<string[]>("Main Category");
+                            var subCategoryIds = record.GetField<string[]>("Sub Category");
 
                             Console.WriteLine($"\n=== Product: {record.GetField("Name")} ===");
                             Console.WriteLine($"MainCategory IDs: {string.Join(", ", mainCategoryIds ?? new string[0])}");
@@ -81,8 +81,8 @@ namespace fabrics.Services
                                 ["Name"] = record.GetField("Name"),
                                 ["PricePerMeter"] = record.GetField("PricePerMeter"),
                                 ["Description"] = record.GetField("Description"),
-                                ["MainCategory"] = mainCategoryName,
-                                ["subCategory"] = subCategoryName
+                                ["Main Category"] = mainCategoryName,
+                                ["Sub Category"] = subCategoryName
                             };
 
                             products.Add(product);
