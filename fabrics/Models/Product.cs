@@ -18,7 +18,15 @@ namespace fabrics.Models
         [JsonProperty("Image")]
         public string Image { get; set; }
 
+        // ✅ في Airtable، Category يكون array of record IDs
+        [JsonProperty("Category")]
         public string[] Category { get; set; }
+
+        [JsonProperty("MainCategory")]
+        public string[] MainCategory { get; set; }
+
+        [JsonProperty("SubCategory")]
+        public string[] SubCategory { get; set; }
 
     }
 }
