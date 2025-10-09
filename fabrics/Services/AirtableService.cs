@@ -46,17 +46,33 @@ namespace fabrics.Services
         public async Task<List<Category>> GetAllCategoriesAsync()
         {
             var categories = new List<Category>();
-            var query = ""; // You can add sorting/filtering here if needed
 
             try
             {
-                var response = await _airtableBase.ListRecords<Category>(_categoriesTableName, query);
-                categories = response.Records.Select(r => r.Fields).ToList();
+                var response = await _airtableBase.ListRecords(_categoriesTableName);
+
+                if (response.Success)
+                {
+                    foreach (var record in response.Records)
+                    {
+                        var fields = record.Fields;
+
+                        var category = new Category
+                        {
+                            Id = record.Id, // ✅ مهم جدًا
+                            Name = fields.ContainsKey("Name") ? fields["Name"]?.ToString() : null,
+                            ParentCategory = fields.ContainsKey("Parent Category")
+                                ? ((Newtonsoft.Json.Linq.JArray)fields["Parent Category"]).ToObject<string[]>()
+                                : null
+                        };
+
+                        categories.Add(category);
+                    }
+                }
             }
             catch (Exception ex)
             {
-                // Handle exceptions (log, throw custom exception, etc.)
-                Console.WriteLine($"Error fetching categories: {ex.Message}");
+                Console.WriteLine($"❌ Error fetching categories: {ex.Message}");
             }
 
             return categories;
