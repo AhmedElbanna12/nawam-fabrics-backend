@@ -30,57 +30,54 @@ namespace fabrics.Services
         public async Task<List<Dictionary<string, object>>> GetProductsAsync()
         {
             var products = new List<Dictionary<string, object>>();
+
             try
             {
                 using var airtableBase = GetBase();
 
+                // 1️⃣ جلب كل Categories عشان نعمل dictionary للـ ID -> Name
                 var categoriesResponse = await airtableBase.ListRecords("Categories");
                 var categoriesDict = new Dictionary<string, string>();
 
                 if (categoriesResponse.Success)
                 {
-                    Console.WriteLine("=== Categories ===");
                     foreach (var cat in categoriesResponse.Records)
                     {
-                        var categoryName = cat.GetField<string>("Name");
-                        categoriesDict[cat.Id] = categoryName;
-                        Console.WriteLine($"ID: {cat.Id} -> Name: {categoryName}");
+                        var catName = cat.GetField<string>("Name");
+                        categoriesDict[cat.Id] = catName;
                     }
                 }
 
+                // 2️⃣ جلب كل Products
                 var response = await airtableBase.ListRecords("Products");
+
                 if (response.Success)
                 {
                     foreach (var record in response.Records)
                     {
                         try
                         {
-                            var mainCategoryIds = record.GetField<string[]>("Main Category");
-                            var subCategoryIds = record.GetField<string[]>("Sub Category");
+                            // 3️⃣ linked records: Main & Sub Category
+                            var mainCategoryIds = record.GetField<List<string>>("MainCategory") ?? new List<string>();
+                            var subCategoryIds = record.GetField<List<string>>("SubCategory") ?? new List<string>();
 
-                            Console.WriteLine($"\n=== Product: {record.GetField("Name")} ===");
-                            Console.WriteLine($"MainCategory IDs: {string.Join(", ", mainCategoryIds ?? new string[0])}");
-                            Console.WriteLine($"SubCategory IDs: {string.Join(", ", subCategoryIds ?? new string[0])}");
+                            var mainCategoryName = mainCategoryIds.FirstOrDefault() != null &&
+                                                   categoriesDict.ContainsKey(mainCategoryIds.First())
+                                                   ? categoriesDict[mainCategoryIds.First()]
+                                                   : null;
 
-                            var mainCategoryId = mainCategoryIds?.FirstOrDefault();
-                            var subCategoryId = subCategoryIds?.FirstOrDefault();
-
-                            Console.WriteLine($"Looking for MainCategory ID: {mainCategoryId}");
-                            Console.WriteLine($"Found in dict: {(mainCategoryId != null && categoriesDict.ContainsKey(mainCategoryId))}");
-
-                            var mainCategoryName = mainCategoryId != null && categoriesDict.ContainsKey(mainCategoryId)
-                                                  ? categoriesDict[mainCategoryId]
+                            var subCategoryName = subCategoryIds.FirstOrDefault() != null &&
+                                                  categoriesDict.ContainsKey(subCategoryIds.First())
+                                                  ? categoriesDict[subCategoryIds.First()]
                                                   : null;
-                            var subCategoryName = subCategoryId != null && categoriesDict.ContainsKey(subCategoryId)
-                                                 ? categoriesDict[subCategoryId]
-                                                 : null;
 
+                            // 4️⃣ إنشاء Dictionary للمنتج
                             var product = new Dictionary<string, object>
                             {
                                 ["Id"] = record.Id,
-                                ["Name"] = record.GetField("Name"),
-                                ["PricePerMeter"] = record.GetField("PricePerMeter"),
-                                ["Description"] = record.GetField("Description"),
+                                ["Name"] = record.GetField<string>("Name"),
+                                ["PricePerMeter"] = record.GetField<double?>("PricePerMeter"),
+                                ["Description"] = record.GetField<string>("Description"),
                                 ["MainCategory"] = mainCategoryName,
                                 ["SubCategory"] = subCategoryName
                             };
@@ -89,14 +86,14 @@ namespace fabrics.Services
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Error processing record {record.Id}: {ex.Message}");
+                            Console.WriteLine($"Error processing product {record.Id}: {ex.Message}");
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR: {ex.Message}");
+                Console.WriteLine($"ERROR in GetProductsAsync: {ex.Message}");
             }
 
             return products;
