@@ -1,5 +1,6 @@
 ﻿using AirtableApiClient;
 using fabrics.Dtos;
+using fabrics.Models;
 using fabrics.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -27,85 +28,36 @@ namespace fabrics.Services
         private AirtableBase GetBase() => new AirtableBase(_apiKey, _baseId);
 
         // جلب كل المنتجات
-        public async Task<List<Dictionary<string, object>>> GetProductsAsync()
+        public async Task<List<product>> GetProductsAsync()
         {
-            var products = new List<Dictionary<string, object>>();
-            try
+            var products = new List<product>();
+            using var airtableBase = GetBase();
+            var response = await airtableBase.ListRecords("Products");
+
+            if (response.Success)
             {
-                using var airtableBase = GetBase();
-
-                var categoriesResponse = await airtableBase.ListRecords("Categories");
-                var categoriesDict = new Dictionary<string, string>();
-
-                if (categoriesResponse.Success)
+                foreach (var record in response.Records)
                 {
-                    Console.WriteLine("=== Categories ===");
-                    foreach (var cat in categoriesResponse.Records)
+                    var product = new product
                     {
-                        var categoryName = cat.GetField<string>("Name");
-                        categoriesDict[cat.Id] = categoryName;
-                        Console.WriteLine($"ID: {cat.Id} -> Name: {categoryName}");
-                    }
+                        Id = record.Id,
+                        Name = record.GetField<string>("Name"),
+                        Description = record.GetField<string>("Description"),
+                        PricePerMeter = record.GetField<double?>("PricePerMeter"),
+                        SubCategory = record.GetField<string[]>("Sub Category")?.FirstOrDefault(),
+                        MainCategory = record.GetField<string[]>("Main Category")?.FirstOrDefault()
+                    };
+                    products.Add(product);
                 }
-
-                var response = await airtableBase.ListRecords("Products");
-                if (response.Success)
-                {
-                    foreach (var record in response.Records)
-                    {
-                        try
-                        {
-                            var mainCategoryIds = record.GetField<string[]>("Main Category");
-                            var subCategoryIds = record.GetField<string[]>("Sub Category");
-
-                            Console.WriteLine($"\n=== Product: {record.GetField("Name")} ===");
-                            Console.WriteLine($"MainCategory IDs: {string.Join(", ", mainCategoryIds ?? new string[0])}");
-                            Console.WriteLine($"SubCategory IDs: {string.Join(", ", subCategoryIds ?? new string[0])}");
-
-                            var mainCategoryId = mainCategoryIds?.FirstOrDefault();
-                            var subCategoryId = subCategoryIds?.FirstOrDefault();
-
-                            Console.WriteLine($"Looking for MainCategory ID: {mainCategoryId}");
-                            Console.WriteLine($"Found in dict: {(mainCategoryId != null && categoriesDict.ContainsKey(mainCategoryId))}");
-
-                            var mainCategoryName = mainCategoryId != null && categoriesDict.ContainsKey(mainCategoryId)
-                                                  ? categoriesDict[mainCategoryId]
-                                                  : null;
-                            var subCategoryName = subCategoryId != null && categoriesDict.ContainsKey(subCategoryId)
-                                                 ? categoriesDict[subCategoryId]
-                                                 : null;
-
-                            var product = new Dictionary<string, object>
-                            {
-                                ["Id"] = record.Id,
-                                ["Name"] = record.GetField("Name"),
-                                ["PricePerMeter"] = record.GetField("PricePerMeter"),
-                                ["Description"] = record.GetField("Description"),
-                                ["MainCategory"] = mainCategoryName,
-                                ["SubCategory"] = subCategoryName
-                            };
-
-                            products.Add(product);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Error processing record {record.Id}: {ex.Message}");
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"ERROR: {ex.Message}");
             }
 
             return products;
         }
 
 
-        public async Task<List<Dictionary<string, object>>> GetCategoriesAsync()
+        public async Task<List<Category>> GetCategoriesAsync()
         {
-            var categories = new List<Dictionary<string, object>>();
+            var categories = new List<Category>();
             using var airtableBase = GetBase();
             var response = await airtableBase.ListRecords("Categories");
 
@@ -113,14 +65,14 @@ namespace fabrics.Services
             {
                 foreach (var record in response.Records)
                 {
-                    var cat = new Dictionary<string, object>
+                    var category = new Category
                     {
-                        ["Id"] = record.Id,
-                        ["Name"] = record.GetField("Name"),
-                        ["Description"] = record.GetField("Description"),
-                        ["ParentCategory"] = record.GetField("ParentCategory")
+                        Id = record.Id,
+                        Name = record.GetField<string>("Name"),
+                        Description = record.GetField<string>("Description"),
+                        ParentCategory = record.GetField<string[]>("ParentCategory")?.FirstOrDefault()
                     };
-                    categories.Add(cat);
+                    categories.Add(category);
                 }
             }
 

@@ -11,7 +11,7 @@ namespace fabrics.Controllers
 
         public CategoriesController(AirtableService air)
         {
-            _air = air;
+            _air = air ; 
         }
 
         [HttpGet]
@@ -20,25 +20,27 @@ namespace fabrics.Controllers
             var allCategories = await _air.GetCategoriesAsync();
             var allProducts = await _air.GetProductsAsync();
 
-            // بناء hierarchy
+            // Main Categories
             var mainCategories = allCategories
-                .Where(c => c["ParentCategory"] == null)
+                .Where(c => string.IsNullOrEmpty(c.ParentCategory))
                 .ToList();
 
             foreach (var mainCat in mainCategories)
             {
+                // SubCategories لكل Main
                 var subCats = allCategories
-                    .Where(c => c["ParentCategory"] is object parent && parent.ToString() == mainCat["Id"].ToString())
+                    .Where(c => c.ParentCategory == mainCat.Id)
                     .ToList();
 
                 foreach (var subCat in subCats)
                 {
-                    subCat["Products"] = allProducts
-                        .Where(p => p["SubCategory"]?.ToString() == subCat["Id"].ToString())
+                    // ربط المنتجات لكل SubCategory
+                    subCat.Products = allProducts
+                        .Where(p => p.SubCategory == subCat.Id)
                         .ToList();
                 }
 
-                mainCat["SubCategory"] = subCats;
+                mainCat.SubCategory = subCats;
             }
 
             return Ok(mainCategories);
