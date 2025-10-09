@@ -38,7 +38,7 @@ namespace fabrics.Controllers
                         .ToList();
                 }
 
-                mainCat["SubCategories"] = subCats;
+                mainCat["SubCategory"] = subCats;
             }
 
             return Ok(mainCategories);
