@@ -39,65 +39,90 @@ namespace fabrics.Controllers
         [HttpPost]
         public async Task<IActionResult> Receive([FromBody] JsonElement body)
         {
-            var entry = body.GetProperty("entry")[0];
-            var messaging = entry.GetProperty("messaging")[0];
-            var senderId = messaging.GetProperty("sender").GetProperty("id").GetString();
-
-            if (messaging.TryGetProperty("message", out var message))
+            try
             {
-                // start or any text → show parent categories
-                var (parents, _) = await _airtable.GetCategoriesAsync();
-                var buttons = parents.Select(p => (object)new
+                Console.WriteLine("📩 Webhook received:");
+                Console.WriteLine(body);
+
+                if (!body.TryGetProperty("entry", out var entries))
+                    return BadRequest("Missing 'entry'");
+
+                foreach (var entry in entries.EnumerateArray())
                 {
-                    type = "postback",
-                    title = p.Name,
-                    payload = $"PARENT_{p.Id}"
-                }).ToList();
+                    if (!entry.TryGetProperty("messaging", out var messagingArray))
+                        continue;
 
-
-                await _messenger.SendButtonsAsync(senderId, "اختر نوع القماش:", buttons);
-            }
-            else if (messaging.TryGetProperty("postback", out var postback))
-            {
-                var payload = postback.GetProperty("payload").GetString();
-
-                if (payload.StartsWith("PARENT_"))
-                {
-                    var parentId = payload.Replace("PARENT_", "");
-                    var (_, subs) = await _airtable.GetCategoriesAsync();
-
-                    var subForParent = subs.Where(s => s.ParentCategoryIds.Contains(parentId)).ToList();
-                    var buttons = subForParent.Select(s => new
+                    foreach (var messaging in messagingArray.EnumerateArray())
                     {
-                        type = "postback",
-                        title = s.Name,
-                        payload = $"SUB_{parentId}_{s.Id}"
-                    }).Cast<object>().ToList();
+                        var senderId = messaging.GetProperty("sender").GetProperty("id").GetString();
 
-                    await _messenger.SendButtonsAsync(senderId, "اختر النوع الفرعي:", buttons);
+                        // 🟢 إذا كانت رسالة نصية
+                        if (messaging.TryGetProperty("message", out var message))
+                        {
+                            var text = message.TryGetProperty("text", out var textProp) ? textProp.GetString() : "";
+                            Console.WriteLine($"👤 Received message from {senderId}: {text}");
 
+                            var (parents, _) = await _airtable.GetCategoriesAsync();
+                            var buttons = parents.Select(p => (object)new
+                            {
+                                type = "postback",
+                                title = p.Name,
+                                payload = $"PARENT_{p.Id}"
+                            }).ToList();
 
+                            await _messenger.SendButtonsAsync(senderId, "اختر نوع القماش:", buttons);
+                        }
+
+                        // 🟡 إذا كانت postback
+                        else if (messaging.TryGetProperty("postback", out var postback))
+                        {
+                            var payload = postback.GetProperty("payload").GetString();
+                            Console.WriteLine($"🟨 Received postback: {payload}");
+
+                            if (payload.StartsWith("PARENT_"))
+                            {
+                                var parentId = payload.Replace("PARENT_", "");
+                                var (_, subs) = await _airtable.GetCategoriesAsync();
+
+                                var subForParent = subs.Where(s => s.ParentCategoryIds.Contains(parentId)).ToList();
+                                var buttons = subForParent.Select(s => (object)new
+                                {
+                                    type = "postback",
+                                    title = s.Name,
+                                    payload = $"SUB_{parentId}_{s.Id}"
+                                }).ToList();
+
+                                await _messenger.SendButtonsAsync(senderId, "اختر النوع الفرعي:", buttons);
+                            }
+                            else if (payload.StartsWith("SUB_"))
+                            {
+                                var parts = payload.Split('_');
+                                var parentId = parts[1];
+                                var subId = parts[2];
+
+                                var products = await _airtable.GetProductsAsync();
+                                var filtered = products
+                                    .Where(p => (string)p["MainCategoryId"] == parentId && (string)p["SubCategoryId"] == subId)
+                                    .ToList();
+
+                                var text = filtered.Count > 0
+                                    ? string.Join("\n", filtered.Select(p => $"📦 {p["Name"]} - {p["PricePerMeter"]} جنيه"))
+                                    : "❌ لا توجد منتجات في هذا القسم.";
+
+                                await _messenger.SendTextAsync(senderId, text);
+                            }
+                        }
+                    }
                 }
-                else if (payload.StartsWith("SUB_"))
-                {
-                    var parts = payload.Split('_');
-                    var parentId = parts[1];
-                    var subId = parts[2];
 
-                    var products = await _airtable.GetProductsAsync();
-                    var filtered = products
-                        .Where(p => (string)p["MainCategoryId"] == parentId && (string)p["SubCategoryId"] == subId)
-                        .ToList();
-
-                    var text = filtered.Count > 0
-                        ? string.Join("\n", filtered.Select(p => $"📦 {p["Name"]} - {p["PricePerMeter"]} جنيه"))
-                        : "❌ لا توجد منتجات في هذا القسم.";
-
-                    await _messenger.SendTextAsync(senderId, text);
-                }
+                return Ok();
             }
-
-            return Ok();
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ Webhook error: " + ex.Message);
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
     }
 }
