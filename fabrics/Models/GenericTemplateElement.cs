@@ -10,17 +10,17 @@ namespace fabrics.Models
 
         [JsonPropertyName("title")]
 
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
 
 
         [JsonPropertyName("subtitle")]
-        public string Subtitle { get; set; }
+        public string Subtitle { get; set; } = string.Empty;
 
 
 
         [JsonPropertyName("image_url")]
-        public string image_url { get; set; }
+        public string ImageUrl { get; set; } = string.Empty;
 
 
         [JsonPropertyName("buttons")]

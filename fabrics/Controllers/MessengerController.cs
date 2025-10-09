@@ -114,7 +114,7 @@ namespace fabrics.Controllers
                     var element = new GenericTemplateElement
                     {
                         Title = category.Name ?? "بدون اسم",
-                        ImageUrl = "https://via.placeholder.com/300x200/4A90E2/FFFFFF?text=Category", // صورة افتراضية
+                        //ImageUrl = "https://via.placeholder.com/300x200/4A90E2/FFFFFF?text=Category", // صورة افتراضية
                         Buttons = new List<Button>
                 {
                     new Button
@@ -191,7 +191,7 @@ namespace fabrics.Controllers
                     var element = new GenericTemplateElement
                     {
                         Title = subCategory.Name ?? "بدون اسم",
-                        ImageUrl = "https://via.placeholder.com/300x200/50B7C1/FFFFFF?text=Subcategory",
+                       // ImageUrl = "https://via.placeholder.com/300x200/50B7C1/FFFFFF?text=Subcategory",
                         Buttons = new List<Button>
                 {
                     new Button
@@ -210,7 +210,7 @@ namespace fabrics.Controllers
                 {
                     Title = "العودة للرئيسية",
                     Subtitle = "العودة لقائمة التصنيفات الرئيسية",
-                    ImageUrl = "https://via.placeholder.com/300x200/FF6B6B/FFFFFF?text=Back",
+                   // ImageUrl = "https://via.placeholder.com/300x200/FF6B6B/FFFFFF?text=Back",
                     Buttons = new List<Button>
             {
                 new Button
@@ -253,7 +253,7 @@ namespace fabrics.Controllers
                     {
                         Title = product.Name ?? "منتج بدون اسم",
                         Subtitle = $"💰 {product.PricePerMeter} جنيه | {product.Description?.Substring(0, Math.Min(60, product.Description.Length))}..." ?? "لا يوجد وصف",
-                        ImageUrl = product.Image ?? "https://via.placeholder.com/300x200/77DD77/FFFFFF?text=Product",
+                        //ImageUrl = product.Image ?? "https://via.placeholder.com/300x200/77DD77/FFFFFF?text=Product",
                         Buttons = new List<Button>
                 {
                     new Button
