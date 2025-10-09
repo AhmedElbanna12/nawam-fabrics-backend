@@ -97,43 +97,46 @@ namespace fabrics.Controllers
         // ✅ إرسال التصنيفات الرئيسية
         private async Task SendMainCategories(string senderId)
         {
-            var mainCategories = await _airtableService.GetMainCategoriesAsync();
-
-            // Check if categories were found
-            if (mainCategories == null || !mainCategories.Any())
+            try
             {
-                await _messenger.SendTextAsync(senderId, "No categories available.");
-                return;
-            }
+                var mainCategories = await _airtableService.GetMainCategoriesAsync();
 
-            var elements = new List<GenericTemplateElement>();
-
-            // Create one element ("bubble") in the generic template for each main category
-            foreach (var category in mainCategories)
-            {
-                var element = new GenericTemplateElement
+                if (mainCategories == null || !mainCategories.Any())
                 {
-                    Title = category.Name,
-                    // Add other properties like subtitle or image_url if available
-                    Buttons = new List<Button>
-            {
-                // Each element can have up to 3 buttons.
-                // Here, using one button per category to view its sub-categories.
-                new Button
-                {
-                    Type = "postback",
-                    Title = "View Subcategories",
-                    Payload = $"MAIN_CATEGORY_{category.Id}"
+                    await _messenger.SendTextAsync(senderId, "❌ لا توجد تصنيفات متاحة حالياً.");
+                    return;
                 }
-            }
-                };
-                elements.Add(element);
-            }
 
-            // Send the categories as a generic template carousel
-            await _messenger.SendGenericTemplateAsync(senderId, elements);
+                var elements = new List<GenericTemplateElement>();
+
+                foreach (var category in mainCategories.Take(10)) // ✅ لا يزيد عن 10 تصنيفات
+                {
+                    var element = new GenericTemplateElement
+                    {
+                        Title = category.Name ?? "بدون اسم",
+                        ImageUrl = "https://via.placeholder.com/300x200/4A90E2/FFFFFF?text=Category", // صورة افتراضية
+                        Buttons = new List<Button>
+                {
+                    new Button
+                    {
+                        Type = "postback",
+                        Title = "📂 اختر التصنيف",
+                        Payload = $"MAIN_CATEGORY_{category.Id}"
+                    }
+                }
+                    };
+                    elements.Add(element);
+                }
+
+                await _messenger.SendGenericTemplateAsync(senderId, elements);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error sending main categories");
+                await _messenger.SendTextAsync(senderId, "❌ حدث خطأ في جلب التصنيفات.");
+            }
         }
-        
+
 
         // ✅ معالجة Postback (ضغط الأزرار)
         private async Task HandlePostback(string senderId, string payload)
@@ -174,32 +177,56 @@ namespace fabrics.Controllers
             {
                 var subCategories = await _airtableService.GetSubCategoriesAsync(mainCategoryId);
 
-                var buttons = new List<Button>();
-
-                // إضافة أزرار التصنيفات الفرعية
-                foreach (var subCat in subCategories)
+                if (subCategories == null || !subCategories.Any())
                 {
-                    buttons.Add(new Button
-                    {
-                        Type = "postback",
-                        Title = subCat.Name,
-                        Payload = $"SUB_CATEGORY_{mainCategoryId}_{subCat.Id}"
-                    });
+                    // إذا لم يكن هناك تصنيفات فرعية، أرسل المنتجات مباشرة
+                    await SendProducts(senderId, mainCategoryId);
+                    return;
                 }
 
-                // إضافة زر للعودة للتصنيفات الرئيسية
-                buttons.Add(new Button
+                var elements = new List<GenericTemplateElement>();
+
+                foreach (var subCategory in subCategories.Take(10))
+                {
+                    var element = new GenericTemplateElement
+                    {
+                        Title = subCategory.Name ?? "بدون اسم",
+                        ImageUrl = "https://via.placeholder.com/300x200/50B7C1/FFFFFF?text=Subcategory",
+                        Buttons = new List<Button>
+                {
+                    new Button
+                    {
+                        Type = "postback",
+                        Title = "🛍️ عرض المنتجات",
+                        Payload = $"SUB_CATEGORY_{mainCategoryId}_{subCategory.Id}"
+                    }
+                }
+                    };
+                    elements.Add(element);
+                }
+
+                // إضافة زر للعودة
+                elements.Add(new GenericTemplateElement
+                {
+                    Title = "العودة للرئيسية",
+                    Subtitle = "العودة لقائمة التصنيفات الرئيسية",
+                    ImageUrl = "https://via.placeholder.com/300x200/FF6B6B/FFFFFF?text=Back",
+                    Buttons = new List<Button>
+            {
+                new Button
                 {
                     Type = "postback",
-                    Title = "🔙 العودة للرئيسية",
+                    Title = "🔙 العودة",
                     Payload = "BACK_TO_MAIN"
+                }
+            }
                 });
 
-                await _messenger.SendButtonsAsync(senderId, "📂 اختر التصنيف الفرعي:", buttons);
+                await _messenger.SendGenericTemplateAsync(senderId, elements);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error sending subcategories for main category {mainCategoryId}");
+                _logger.LogError(ex, $"Error sending subcategories for {mainCategoryId}");
                 await _messenger.SendTextAsync(senderId, "❌ حدث خطأ في جلب التصنيفات الفرعية.");
             }
         }
@@ -214,38 +241,39 @@ namespace fabrics.Controllers
                 if (products == null || !products.Any())
                 {
                     await _messenger.SendTextAsync(senderId, "❌ لا توجد منتجات في هذا التصنيف.");
-                    await SendMainCategories(senderId);
+                    await SendMainCategories(senderId); // العودة للرئيسية
                     return;
                 }
 
-                // إذا كان هناك منتج واحد فقط، أرسله كنص عادي
-                if (products.Count == 1)
-                {
-                    var product = products.First();
-                    var message = $"🛍️ {product.Name}\n" +
-                                 $"📝 {product.Description}\n" +
-                                 $"💰 السعر: {product.PricePerMeter} جنيه\n" +
-                                 $"🏷️ التصنيف: {await GetCategoryName(product.Category?.FirstOrDefault())}";
+                var elements = new List<GenericTemplateElement>();
 
-                    await _messenger.SendTextAsync(senderId, message);
-                }
-                else
+                foreach (var product in products.Take(10))
                 {
-                    // إرسال المنتجات كـ Generic Template (carousel)
-                    var elements = products.Select(product => new GenericTemplateElement
+                    var element = new GenericTemplateElement
                     {
-                        Title = product.Name,
-                        Subtitle = $"{product.PricePerMeter} جنيه - {product.Description}",
-                        ImageUrl = product.Image,
+                        Title = product.Name ?? "منتج بدون اسم",
+                        Subtitle = $"💰 {product.PricePerMeter} جنيه | {product.Description?.Substring(0, Math.Min(60, product.Description.Length))}..." ?? "لا يوجد وصف",
+                        ImageUrl = product.Image ?? "https://via.placeholder.com/300x200/77DD77/FFFFFF?text=Product",
                         Buttons = new List<Button>
-                        {
-                            new Button { Type = "postback", Title = "📞 طلب المنتج", Payload = $"ORDER_{product.Id}" },
-                            new Button { Type = "postback", Title = "🔙 العودة", Payload = "BACK_TO_MAIN" }
-                        }
-                    }).ToList();
-
-                    await _messenger.SendGenericTemplateAsync(senderId, elements);
+                {
+                    new Button
+                    {
+                        Type = "postback",
+                        Title = "🛒 طلب المنتج",
+                        Payload = $"ORDER_{product.Id}"
+                    },
+                    new Button
+                    {
+                        Type = "postback",
+                        Title = "🔙 العودة",
+                        Payload = "BACK_TO_MAIN"
+                    }
                 }
+                    };
+                    elements.Add(element);
+                }
+
+                await _messenger.SendGenericTemplateAsync(senderId, elements);
             }
             catch (Exception ex)
             {

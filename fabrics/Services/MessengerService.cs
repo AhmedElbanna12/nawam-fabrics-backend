@@ -29,47 +29,64 @@ namespace fabrics.Services
 
         public async Task SendButtonsAsync(string recipientId, string text, List<Button> buttons)
         {
-            var payload = new
+            try
             {
-                recipient = new { id = recipientId },
-                message = new
+                // ✅ لا يزيد عن 3 أزرار في القالب الواحد
+                var limitedButtons = buttons.Take(3).ToList();
+
+                var payload = new
                 {
-                    attachment = new
+                    recipient = new { id = recipientId },
+                    message = new
                     {
-                        type = "template",
-                        payload = new
+                        attachment = new
                         {
-                            template_type = "button",
-                            text,
-                            buttons = buttons
+                            type = "template",
+                            payload = new
+                            {
+                                template_type = "button",
+                                text = text,
+                                buttons = limitedButtons
+                            }
                         }
                     }
-                }
-            };
+                };
 
-            await SendToMessenger(payload);
+                await SendToMessenger(payload);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending buttons: {ex.Message}");
+            }
         }
 
         public async Task SendGenericTemplateAsync(string recipientId, List<GenericTemplateElement> elements)
         {
-            var payload = new
+            try
             {
-                recipient = new { id = recipientId },
-                message = new
+                var payload = new
                 {
-                    attachment = new
+                    recipient = new { id = recipientId },
+                    message = new
                     {
-                        type = "template",
-                        payload = new
+                        attachment = new
                         {
-                            template_type = "generic",
-                            elements = elements
+                            type = "template",
+                            payload = new
+                            {
+                                template_type = "generic",
+                                elements = elements.Take(10).ToList() // ✅ لا يزيد عن 10 عناصر
+                            }
                         }
                     }
-                }
-            };
+                };
 
-            await SendToMessenger(payload);
+                await SendToMessenger(payload);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending generic template: {ex.Message}");
+            }
         }
 
         private async Task SendToMessenger(object payload)
