@@ -18,10 +18,7 @@ namespace fabrics.Models
         [JsonProperty("Image")]
         public string Image { get; set; }
 
-        [JsonProperty("MainCategory")]
-        public string MainCategory { get; set; } // Link to Categories table    }
+        public string[] Category { get; set; }
 
-        [JsonProperty("SubCategory")]
-        public string SubCategory { get; set; }
     }
 }

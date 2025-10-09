@@ -24,19 +24,20 @@ namespace fabrics.Services
 
 
 
-        public AirtableService( IConfiguration config, TelegramService telegram , string categoriesTableName = "Categories", string productsTableName = "Products")
+        public AirtableService( IConfiguration config, TelegramService telegram )
             { 
 
             _telegram = telegram;
             _apiKey = config["Airtable:ApiKey"];
             _baseId = config["Airtable:BaseId"];
-            _categoriesTableName = categoriesTableName;
-            _productsTableName = productsTableName;
+            _categoriesTableName = "Categories";
+            _productsTableName = "Products";
 
         }
-        
 
-          
+
+
+
         private AirtableBase GetBase() => new AirtableBase(_apiKey, _baseId);
 
         // جلب كل المنتجات
