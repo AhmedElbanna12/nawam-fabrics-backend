@@ -42,14 +42,6 @@ namespace fabrics.Services
         private AirtableBase GetBase() => new AirtableBase(_apiKey, _baseId);
 
 
-        public async Task<(List<Category> parents, List<Category> subs)> GetCategoriesAsync()
-        {
-            var categories = await GetAllAsync<Category>("Categories");
-            var parents = categories.Where(c => c.ParentCategoryIds == null || c.ParentCategoryIds.Count == 0).ToList();
-            var subs = categories.Where(c => c.ParentCategoryIds != null && c.ParentCategoryIds.Count > 0).ToList();
-
-            return (parents, subs);
-        }
 
 
         // جلب كل المنتجات

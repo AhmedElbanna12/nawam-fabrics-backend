@@ -4,6 +4,7 @@ namespace fabrics.Models
 {
     public class Product
     {
+        public string Id { get; set; }
 
         [JsonProperty("Name")]
         public string Name { get; set; }

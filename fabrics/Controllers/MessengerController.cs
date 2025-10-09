@@ -206,7 +206,7 @@ namespace fabrics.Controllers
                     var product = products.First();
                     var message = $"🛍️ {product.Name}\n" +
                                  $"📝 {product.Description}\n" +
-                                 $"💰 السعر: {product.Price} جنيه\n" +
+                                 $"💰 السعر: {product.PricePerMeter} جنيه\n" +
                                  $"🏷️ التصنيف: {await GetCategoryName(product.Category?.FirstOrDefault())}";
 
                     await _messenger.SendTextAsync(senderId, message);
@@ -217,8 +217,8 @@ namespace fabrics.Controllers
                     var elements = products.Select(product => new GenericTemplateElement
                     {
                         Title = product.Name,
-                        Subtitle = $"{product.Price} جنيه - {product.Description}",
-                        ImageUrl = product.ImageUrl,
+                        Subtitle = $"{product.PricePerMeter} جنيه - {product.Description}",
+                        ImageUrl = product.Image,
                         Buttons = new List<Button>
                         {
                             new Button { Type = "postback", Title = "📞 طلب المنتج", Payload = $"ORDER_{product.Id}" },
