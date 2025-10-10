@@ -16,7 +16,6 @@ namespace fabrics.Models
 
 
         [JsonPropertyName("payload")]
-
         public string Payload { get; set; }
     }
 }

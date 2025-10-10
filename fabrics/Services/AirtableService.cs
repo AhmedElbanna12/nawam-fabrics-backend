@@ -52,30 +52,30 @@ namespace fabrics.Services
 
             try
             {
-                var response = await _airtableBase.ListRecords(_categoriesTableName);
+                using var airtableBase = GetBase();
+                var response = await airtableBase.ListRecords("Categories");
 
                 if (response.Success)
                 {
+                    Console.WriteLine("=== RAW CATEGORIES DATA ===");
                     foreach (var record in response.Records)
                     {
-                        var fields = record.Fields;
+                        var parentCategory = record.GetField<string[]>("ParentCategory");
+                        Console.WriteLine($"ID: {record.Id}, Name: {record.GetField<string>("Name")}, ParentCategory: {(parentCategory == null ? "NULL" : $"[{string.Join(",", parentCategory)}]")}");
 
                         var category = new Category
                         {
-                            Id = record.Id, // ✅ مهم جدًا
-                            Name = fields.ContainsKey("Name") ? fields["Name"]?.ToString() : null,
-                            ParentCategory = fields.ContainsKey("Parent Category")
-                                ? ((Newtonsoft.Json.Linq.JArray)fields["Parent Category"]).ToObject<string[]>()
-                                : null
+                            Id = record.Id,
+                            Name = record.GetField<string>("Name") ?? "غير معروف",
+                            ParentCategory = parentCategory ?? new string[0]
                         };
-
                         categories.Add(category);
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Error fetching categories: {ex.Message}");
+                Console.WriteLine($"Error fetching categories: {ex.Message}");
             }
 
             return categories;
@@ -83,8 +83,36 @@ namespace fabrics.Services
 
         public async Task<List<Category>> GetMainCategoriesAsync()
         {
-            var allCategories = await GetAllCategoriesAsync();
-            return allCategories.Where(c => c.IsMainCategory).ToList();
+            var categories = new List<Category>();
+
+            try
+            {
+                using var airtableBase = GetBase();
+
+                // ✅ استخدام formula لتصفية التصنيفات الرئيسية مباشرة من Airtable
+                var formula = "ISBLANK({ParentCategory})";
+                var response = await airtableBase.ListRecords("Categories", filterByFormula: formula);
+
+                if (response.Success)
+                {
+                    foreach (var record in response.Records)
+                    {
+                        var category = new Category
+                        {
+                            Id = record.Id,
+                            Name = record.GetField<string>("Name") ?? "غير معروف",
+                            ParentCategory = record.GetField<string[]>("ParentCategory") ?? new string[0]
+                        };
+                        categories.Add(category);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching main categories: {ex.Message}");
+            }
+
+            return categories;
         }
 
         public async Task<List<Category>> GetSubCategoriesAsync(string parentCategoryId)
