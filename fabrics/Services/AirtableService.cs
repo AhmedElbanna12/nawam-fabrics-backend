@@ -43,25 +43,45 @@ namespace fabrics.Services
 
 
 
-
-        // جلب كل المنتجات
-
-
+        // جلب كل الفئات
         public async Task<List<Category>> GetAllCategoriesAsync()
         {
             var categories = new List<Category>();
 
             try
             {
-                // ✅ استخدم _airtableBase مباشرة
-                var response = await _airtableBase.ListRecords("Categories");
+                var response = await _airtableBase.ListRecords(_categoriesTableName);
 
                 if (response.Success)
                 {
                     Console.WriteLine("=== RAW CATEGORIES DATA ===");
                     foreach (var record in response.Records)
                     {
-                        var parentCategory = record.GetField<string[]>("ParentCategory");
+                        // ✅ التعديل هنا: معالجة ParentCategory كمصفوفة أو كقيمة مفردة
+                        var parentCategoryField = record.GetField<object>("ParentCategory");
+                        string[] parentCategory = null;
+
+                        if (parentCategoryField != null)
+                        {
+                            if (parentCategoryField is JsonElement jsonElement)
+                            {
+                                if (jsonElement.ValueKind == JsonValueKind.Array)
+                                {
+                                    parentCategory = jsonElement.EnumerateArray()
+                                        .Select(e => e.GetString())
+                                        .ToArray();
+                                }
+                                else if (jsonElement.ValueKind == JsonValueKind.String)
+                                {
+                                    parentCategory = new[] { jsonElement.GetString() };
+                                }
+                            }
+                            else if (parentCategoryField is string singleValue)
+                            {
+                                parentCategory = new[] { singleValue };
+                            }
+                        }
+
                         Console.WriteLine($"ID: {record.Id}, Name: {record.GetField<string>("Name")}, ParentCategory: {(parentCategory == null ? "NULL" : $"[{string.Join(",", parentCategory)}]")}");
 
                         var category = new Category
@@ -86,39 +106,72 @@ namespace fabrics.Services
             return categories;
         }
 
+        // ✅ جلب الفئات الرئيسية فقط (التي ليس لها ParentCategory)
         public async Task<List<Category>> GetMainCategoriesAsync()
         {
             var allCategories = await GetAllCategoriesAsync();
 
-            // ✅ تسجيل للتصحيح
-            Console.WriteLine($"=== Total Categories: {allCategories.Count} ===");
-            foreach (var cat in allCategories)
-            {
-                Console.WriteLine($"Category: {cat.Name}, ParentCategory: {(cat.ParentCategory == null ? "NULL" : string.Join(",", cat.ParentCategory))}, IsMain: {cat.IsMainCategory}");
-            }
+            // الفئات الرئيسية هي التي ليس لها ParentCategory
+            var mainCategories = allCategories.Where(c =>
+                c.ParentCategory == null ||
+                c.ParentCategory.Length == 0 ||
+                c.ParentCategory.All(string.IsNullOrEmpty)
+            ).ToList();
 
-            var mainCategories = allCategories.Where(c => c.IsMainCategory).ToList();
             Console.WriteLine($"=== Main Categories Found: {mainCategories.Count} ===");
+            foreach (var cat in mainCategories)
+            {
+                Console.WriteLine($"Main Category: {cat.Name}, ID: {cat.Id}");
+            }
 
             return mainCategories;
         }
 
+        // ✅ جلب الفئات الفرعية الخاصة بفئة رئيسية معينة
         public async Task<List<Category>> GetSubCategoriesAsync(string parentCategoryId)
         {
             var allCategories = await GetAllCategoriesAsync();
-            return allCategories.Where(c => c.ParentCategory != null &&
-                                   c.ParentCategory.Contains(parentCategoryId)).ToList();
+
+            // الفئات الفرعية هي التي تحتوي على parentCategoryId في مصفوفة ParentCategory
+            var subCategories = allCategories.Where(c =>
+                c.ParentCategory != null &&
+                c.ParentCategory.Contains(parentCategoryId)
+            ).ToList();
+
+            Console.WriteLine($"=== SubCategories for {parentCategoryId} ===");
+            foreach (var sub in subCategories)
+            {
+                Console.WriteLine($"SubCategory: {sub.Name}, ID: {sub.Id}");
+            }
+
+            return subCategories;
         }
 
+        // ✅ جلب الفئة الرئيسية من الفئة الفرعية
+        public async Task<Category> GetMainCategoryFromSubCategoryAsync(string subCategoryId)
+        {
+            var allCategories = await GetAllCategoriesAsync();
+            var subCategory = allCategories.FirstOrDefault(c => c.Id == subCategoryId);
+
+            if (subCategory?.ParentCategory?.FirstOrDefault() != null)
+            {
+                var mainCategoryId = subCategory.ParentCategory[0];
+                return allCategories.FirstOrDefault(c => c.Id == mainCategoryId);
+            }
+
+            return null;
+        }
+
+        // ✅ جلب المنتجات الخاصة بفئة معينة (سواء كانت رئيسية أو فرعية)
         public async Task<List<Product>> GetProductsByCategoryAsync(string categoryId)
         {
             var products = new List<Product>();
 
             try
             {
-                // ✅ استخدم _airtableBase مباشرة
-                var formula = $"{{Category}} = '{categoryId}'";
-                var response = await _airtableBase.ListRecords("Products", filterByFormula: formula);
+                // نستخدم Lookup field للعثور على المنتجات المرتبطة بهذه الفئة
+                var formula = $"OR({{Category}} = '{categoryId}', FIND('{categoryId}', {{Category}}))";
+                var response = await _airtableBase.ListRecords(_productsTableName, filterByFormula: formula);
 
                 if (response.Success)
                 {
@@ -131,10 +184,32 @@ namespace fabrics.Services
                             Description = record.GetField<string>("Description") ?? "",
                             PricePerMeter = record.GetField<decimal?>("PricePerMeter") ?? 0,
                             Image = record.GetField<string>("Image") ?? "",
-                            Category = record.GetField<string[]>("Category") ?? new string[0],
-                            MainCategory = record.GetField<string[]>("Main Category") ?? new string[0],
-                            SubCategory = record.GetField<string[]>("Sub Category") ?? new string[0]
+                            Category = record.GetField<string[]>("Category") ?? new string[0]
                         };
+
+                        // ✅ إضافة المنطق لتحديد MainCategory و SubCategory تلقائياً
+                        if (product.Category.Length > 0)
+                        {
+                            var firstCategoryId = product.Category[0];
+                            var firstCategory = (await GetAllCategoriesAsync())
+                                .FirstOrDefault(c => c.Id == firstCategoryId);
+
+                            if (firstCategory != null)
+                            {
+                                // إذا كانت الفئة رئيسية
+                                if (firstCategory.ParentCategory == null || firstCategory.ParentCategory.Length == 0)
+                                {
+                                    product.MainCategory = new[] { firstCategoryId };
+                                    product.SubCategory = new string[0];
+                                }
+                                else // إذا كانت الفئة فرعية
+                                {
+                                    product.SubCategory = new[] { firstCategoryId };
+                                    product.MainCategory = firstCategory.ParentCategory;
+                                }
+                            }
+                        }
+
                         products.Add(product);
                     }
                 }
@@ -147,91 +222,43 @@ namespace fabrics.Services
             return products;
         }
 
-        //public async Task<List<Category>> GetSubCategoriesAsync(string parentCategoryId)
-        //{
-        //    var allCategories = await GetAllCategoriesAsync();
-        //    return allCategories.Where(c => c.ParentCategory != null &&
-        //                           c.ParentCategory.Contains(parentCategoryId)).ToList();
-        //}
+        // ✅ جلب المنتجات الخاصة بفئة رئيسية (بما في ذلك منتجات الفئات الفرعية التابعة لها)
+        public async Task<List<Product>> GetProductsByMainCategoryAsync(string mainCategoryId)
+        {
+            var allProducts = new List<Product>();
 
-        //public async Task<List<Product>> GetProductsByCategoryAsync(string categoryId)
-        //{
-        //    var products = new List<Product>();
+            // 1. جلب المنتجات المرتبطة مباشرة بالفئة الرئيسية
+            var directProducts = await GetProductsByCategoryAsync(mainCategoryId);
+            allProducts.AddRange(directProducts);
 
-        //    // Build formula to filter products by category
-        //    var formula = $"{{Category}} = '{categoryId}'";
+            // 2. جلب الفئات الفرعية التابعة لهذه الفئة الرئيسية
+            var subCategories = await GetSubCategoriesAsync(mainCategoryId);
 
-        //    try
-        //    {
-        //        var response = await _airtableBase.ListRecords<Product>(_productsTableName, formula);
-        //        products = response.Records.Select(r => r.Fields).ToList();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine($"Error fetching products: {ex.Message}");
-        //    }
+            // 3. جلب منتجات كل فئة فرعية
+            foreach (var subCategory in subCategories)
+            {
+                var subProducts = await GetProductsByCategoryAsync(subCategory.Id);
+                allProducts.AddRange(subProducts);
+            }
 
-        //    return products;
-        //}
-
-        //public async Task<List<Dictionary<string, object>>> GetProductsAsync()
-        //{
-        //    var products = new List<Dictionary<string, object>>();
-        //    using var airtableBase = GetBase();
-
-        //    var response = await airtableBase.ListRecords("Products");
-
-        //    if (response.Success)
-        //    {
-        //        foreach (var record in response.Records)
-        //        {
-        //            var product = new Dictionary<string, object>
-        //            {
-        //                ["Id"] = record.Id,
-        //                ["Name"] = record.GetField<string>("Name"),
-        //                ["PricePerMeter"] = record.GetField<double?>("PricePerMeter"),
-        //                ["MainCategoryId"] = record.GetField<List<string>>("MainCategory")?.FirstOrDefault(),
-        //                ["SubCategoryId"] = record.GetField<List<string>>("SubCategory")?.FirstOrDefault()
-        //            };
-        //            products.Add(product);
-        //        }
-        //    }
-
-        //    return products;
-        //}
+            return allProducts.DistinctBy(p => p.Id).ToList();
+        }
 
 
-        //public async Task<(List<AirtableCategory> parents, List<AirtableCategory> subs)> GetCategoriesAsync()
-        //{
-        //    var categories = new List<AirtableCategory>();
-        //    using var airtableBase = GetBase();
 
-        //    var response = await airtableBase.ListRecords("Categories");
 
-        //    if (response.Success)
-        //    {
-        //        foreach (var record in response.Records)
-        //        {
-        //            var category = new AirtableCategory
-        //            {
-        //                Id = record.Id,
-        //                Name = record.GetField<string>("Name"),
-        //                ParentCategoryIds = record.GetField<List<string>>("ParentCategory")
-        //            };
-        //            categories.Add(category);
-        //        }
-        //    }
 
-        //    var parentCategories = categories
-        //        .Where(c => c.ParentCategoryIds == null || c.ParentCategoryIds.Count == 0)
-        //        .ToList();
 
-        //    var subCategories = categories
-        //        .Where(c => c.ParentCategoryIds != null && c.ParentCategoryIds.Count > 0)
-        //        .ToList();
 
-        //    return (parentCategories, subCategories);
-        //}
+
+
+
+
+
+
+
+
+
 
 
         // ✅ دالة تجيب اسم المنتج من Airtable بالـ Record ID
