@@ -12,7 +12,12 @@ namespace fabrics.Models
         [JsonProperty("ParentCategory")]
         public string[] ParentCategory { get; set; } = new string[0];// Airtable returns links as an array of reco       
 
+        public int ProductsCount { get; set; }
+
+        [JsonIgnore]
         public bool IsMainCategory => ParentCategory == null || ParentCategory.Length == 0;
+
+        public string Type => IsMainCategory ? "Main Category" : "Sub Category";
 
     }
 }

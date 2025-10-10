@@ -141,29 +141,34 @@ namespace fabrics.Controllers
             }
         }
 
+       
         // ✅ جلب كل المنتجات
         [HttpGet("products")]
         public async Task<ActionResult<ApiResponse<List<Product>>>> GetAllProducts()
         {
             try
             {
-                // يمكنك إضافة هذه الدالة لـ IAirtableService إذا كنت تحتاجها
-                // أو استخدام GetProductsByCategory مع منطق مختلف
-
+                // تحسين الأداء: استخدام الطريقة المباشرة بدلاً من التكرار
                 var allCategories = await _airtableService.GetAllCategoriesAsync();
                 var allProducts = new List<Product>();
 
-                foreach (var category in allCategories)
+                // نأخذ فقط الفئات التي لديها منتجات
+                var categoriesWithProducts = allCategories.Where(c => c.ProductsCount > 0).ToList();
+
+                foreach (var category in categoriesWithProducts)
                 {
                     var products = await _airtableService.GetProductsByCategoryAsync(category.Id);
                     allProducts.AddRange(products);
                 }
 
+                // إزالة التكرارات
+                var distinctProducts = allProducts.DistinctBy(p => p.Id).ToList();
+
                 return Ok(new ApiResponse<List<Product>>
                 {
                     Success = true,
                     Message = "تم جلب كل المنتجات بنجاح",
-                    Data = allProducts
+                    Data = distinctProducts
                 });
             }
             catch (Exception ex)
@@ -204,6 +209,52 @@ namespace fabrics.Controllers
             }
         }
 
+        
+        // ✅ إندبوينت للحصول على فئة محددة بالID
+        [HttpGet("categories/{categoryId}")]
+        public async Task<ActionResult<ApiResponse<Category>>> GetCategoryById(string categoryId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(categoryId))
+                {
+                    return BadRequest(new ApiResponse<Category>
+                    {
+                        Success = false,
+                        Message = "معرف التصنيف مطلوب"
+                    });
+                }
+
+                var allCategories = await _airtableService.GetAllCategoriesAsync();
+                var category = allCategories.FirstOrDefault(c => c.Id == categoryId);
+
+                if (category == null)
+                {
+                    return NotFound(new ApiResponse<Category>
+                    {
+                        Success = false,
+                        Message = "التصنيف غير موجود"
+                    });
+                }
+
+                return Ok(new ApiResponse<Category>
+                {
+                    Success = true,
+                    Message = "تم جلب التصنيف بنجاح",
+                    Data = category
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "خطأ في جلب التصنيف {CategoryId}", categoryId);
+                return StatusCode(500, new ApiResponse<Category>
+                {
+                    Success = false,
+                    Message = "حدث خطأ في جلب التصنيف"
+                });
+            }
+        }
+
         // ✅ دالة مساعدة لبناء الهيكل الشجري
         private List<CategoryTreeDto> BuildCategoryTree(List<Category> categories)
         {
@@ -216,6 +267,7 @@ namespace fabrics.Controllers
                 {
                     Id = mainCat.Id,
                     Name = mainCat.Name,
+                    ProductsCount = mainCat.ProductsCount
                 };
 
                 // إيجاد التصنيفات الفرعية
@@ -230,6 +282,7 @@ namespace fabrics.Controllers
                     {
                         Id = subCat.Id,
                         Name = subCat.Name,
+                        ProductsCount = subCat.ProductsCount
                     });
                 }
 
@@ -240,4 +293,3 @@ namespace fabrics.Controllers
         }
     }
 }
-
