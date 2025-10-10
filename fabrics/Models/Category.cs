@@ -10,7 +10,7 @@ namespace fabrics.Models
         public string Name { get; set; }
 
         [JsonProperty("ParentCategory")]
-        public string[] ParentCategory { get; set; } = new string[0];// Airtable returns links as an array of reco       
+        public string[] ParentCategory { get; set; } // Airtable returns links as an array of reco       
 
         public bool IsMainCategory => ParentCategory == null || ParentCategory.Length == 0;
 
