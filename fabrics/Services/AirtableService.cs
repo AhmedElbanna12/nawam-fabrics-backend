@@ -39,12 +39,13 @@ namespace fabrics.Services
 
 
 
-        private AirtableBase GetBase() => new AirtableBase(_apiKey, _baseId);
+        //private AirtableBase GetBase() => new AirtableBase(_apiKey, _baseId);
 
 
 
 
         // جلب كل المنتجات
+
 
         public async Task<List<Category>> GetAllCategoriesAsync()
         {
@@ -52,8 +53,8 @@ namespace fabrics.Services
 
             try
             {
-                using var airtableBase = GetBase();
-                var response = await airtableBase.ListRecords("Categories");
+                // ✅ استخدم _airtableBase مباشرة
+                var response = await _airtableBase.ListRecords("Categories");
 
                 if (response.Success)
                 {
@@ -72,10 +73,14 @@ namespace fabrics.Services
                         categories.Add(category);
                     }
                 }
+                else
+                {
+                    Console.WriteLine($"❌ Airtable Error: {response.AirtableApiError?.ErrorMessage}");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error fetching categories: {ex.Message}");
+                Console.WriteLine($"❌ Error fetching categories: {ex.Message}");
             }
 
             return categories;
@@ -83,36 +88,19 @@ namespace fabrics.Services
 
         public async Task<List<Category>> GetMainCategoriesAsync()
         {
-            var categories = new List<Category>();
+            var allCategories = await GetAllCategoriesAsync();
 
-            try
+            // ✅ تسجيل للتصحيح
+            Console.WriteLine($"=== Total Categories: {allCategories.Count} ===");
+            foreach (var cat in allCategories)
             {
-                using var airtableBase = GetBase();
-
-                // ✅ استخدام formula لتصفية التصنيفات الرئيسية مباشرة من Airtable
-                var formula = "ISBLANK({ParentCategory})";
-                var response = await airtableBase.ListRecords("Categories", filterByFormula: formula);
-
-                if (response.Success)
-                {
-                    foreach (var record in response.Records)
-                    {
-                        var category = new Category
-                        {
-                            Id = record.Id,
-                            Name = record.GetField<string>("Name") ?? "غير معروف",
-                            ParentCategory = record.GetField<string[]>("ParentCategory") ?? new string[0]
-                        };
-                        categories.Add(category);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error fetching main categories: {ex.Message}");
+                Console.WriteLine($"Category: {cat.Name}, ParentCategory: {(cat.ParentCategory == null ? "NULL" : string.Join(",", cat.ParentCategory))}, IsMain: {cat.IsMainCategory}");
             }
 
-            return categories;
+            var mainCategories = allCategories.Where(c => c.IsMainCategory).ToList();
+            Console.WriteLine($"=== Main Categories Found: {mainCategories.Count} ===");
+
+            return mainCategories;
         }
 
         public async Task<List<Category>> GetSubCategoriesAsync(string parentCategoryId)
@@ -126,21 +114,65 @@ namespace fabrics.Services
         {
             var products = new List<Product>();
 
-            // Build formula to filter products by category
-            var formula = $"{{Category}} = '{categoryId}'";
-
             try
             {
-                var response = await _airtableBase.ListRecords<Product>(_productsTableName, formula);
-                products = response.Records.Select(r => r.Fields).ToList();
+                // ✅ استخدم _airtableBase مباشرة
+                var formula = $"{{Category}} = '{categoryId}'";
+                var response = await _airtableBase.ListRecords("Products", filterByFormula: formula);
+
+                if (response.Success)
+                {
+                    foreach (var record in response.Records)
+                    {
+                        var product = new Product
+                        {
+                            Id = record.Id,
+                            Name = record.GetField<string>("Name") ?? "غير معروف",
+                            Description = record.GetField<string>("Description") ?? "",
+                            PricePerMeter = record.GetField<decimal?>("PricePerMeter") ?? 0,
+                            Image = record.GetField<string>("Image") ?? "",
+                            Category = record.GetField<string[]>("Category") ?? new string[0],
+                            MainCategory = record.GetField<string[]>("Main Category") ?? new string[0],
+                            SubCategory = record.GetField<string[]>("Sub Category") ?? new string[0]
+                        };
+                        products.Add(product);
+                    }
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error fetching products: {ex.Message}");
+                Console.WriteLine($"❌ Error fetching products: {ex.Message}");
             }
 
             return products;
         }
+
+        //public async Task<List<Category>> GetSubCategoriesAsync(string parentCategoryId)
+        //{
+        //    var allCategories = await GetAllCategoriesAsync();
+        //    return allCategories.Where(c => c.ParentCategory != null &&
+        //                           c.ParentCategory.Contains(parentCategoryId)).ToList();
+        //}
+
+        //public async Task<List<Product>> GetProductsByCategoryAsync(string categoryId)
+        //{
+        //    var products = new List<Product>();
+
+        //    // Build formula to filter products by category
+        //    var formula = $"{{Category}} = '{categoryId}'";
+
+        //    try
+        //    {
+        //        var response = await _airtableBase.ListRecords<Product>(_productsTableName, formula);
+        //        products = response.Records.Select(r => r.Fields).ToList();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Error fetching products: {ex.Message}");
+        //    }
+
+        //    return products;
+        //}
 
         //public async Task<List<Dictionary<string, object>>> GetProductsAsync()
         //{
@@ -167,7 +199,7 @@ namespace fabrics.Services
 
         //    return products;
         //}
-    
+
 
         //public async Task<(List<AirtableCategory> parents, List<AirtableCategory> subs)> GetCategoriesAsync()
         //{
@@ -205,17 +237,23 @@ namespace fabrics.Services
         // ✅ دالة تجيب اسم المنتج من Airtable بالـ Record ID
         public async Task<string> GetProductNameByIdAsync(string recordId)
         {
-            using var airtableBase = GetBase();
-            var response = await airtableBase.RetrieveRecord("Products", recordId);
-
-            if (response.Success && response.Record.Fields.ContainsKey("Name"))
+            try
             {
-                return response.Record.Fields["Name"]?.ToString() ?? "اسم غير معروف";
+                // ✅ استخدم _airtableBase مباشرة
+                var response = await _airtableBase.RetrieveRecord("Products", recordId);
+
+                if (response.Success && response.Record.Fields.ContainsKey("Name"))
+                {
+                    return response.Record.Fields["Name"]?.ToString() ?? "اسم غير معروف";
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ Error getting product name: {ex.Message}");
             }
 
             return "اسم غير معروف";
         }
-
 
 
 
@@ -225,7 +263,6 @@ namespace fabrics.Services
             if (string.IsNullOrEmpty(dto.ProductRecordId))
                 throw new Exception("ProductRecordId is required and must be a valid Airtable record ID.");
 
-            using var airtableBase = GetBase();
 
             var fields = new Fields();
             fields.AddField("Product", new string[] { dto.ProductRecordId });
@@ -234,7 +271,7 @@ namespace fabrics.Services
             fields.AddField("Customer Phone", dto.CustomerPhone);
             fields.AddField("Customer Address", dto.CustomerAddress);
 
-            var response = await airtableBase.CreateRecord("Reservations", fields);
+            var response = await _airtableBase.CreateRecord("Reservations", fields);
 
             if (response.Success)
             {
