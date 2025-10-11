@@ -26,7 +26,7 @@ namespace fabrics
             builder.Services.AddScoped<IAirtableService, AirtableService>();
             builder.Services.AddScoped<AirtableService>();
 
-            builder.Services.AddScoped<MessengerService>();
+           // builder.Services.AddScoped<MessengerService>();
             builder.Services.AddHttpClient();
 
 
