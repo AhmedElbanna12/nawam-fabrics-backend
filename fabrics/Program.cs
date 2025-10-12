@@ -25,8 +25,10 @@ namespace fabrics
             builder.Services.AddSingleton<TelegramService>();
             builder.Services.AddScoped<IAirtableService, AirtableService>();
             builder.Services.AddScoped<AirtableService>();
+            builder.Services.AddScoped<FaqService>();
 
-           // builder.Services.AddScoped<MessengerService>();
+
+            // builder.Services.AddScoped<MessengerService>();
             builder.Services.AddHttpClient();
 
 
