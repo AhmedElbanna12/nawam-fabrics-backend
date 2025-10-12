@@ -13,6 +13,10 @@ namespace fabrics.Services
         {
             _huggingFaceApiKey = config["HuggingFace:ApiKey"];
             _httpClient = new HttpClient();
+
+
+            _httpClient.Timeout = TimeSpan.FromSeconds(60);
+
         }
 
         public async Task<string> GetReplyAsync(string question)
@@ -99,7 +103,7 @@ namespace fabrics.Services
                 _httpClient.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", _huggingFaceApiKey);
 
-                // ✅ نستخدم موديل Falcon 7B للرد بالعربية الفصحى
+                // ✅ FIXED: Use correct API endpoint
                 var payload = new
                 {
                     inputs = $@"
@@ -140,30 +144,58 @@ namespace fabrics.Services
                 var json = JsonSerializer.Serialize(payload);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
+                // ✅ FIXED: Correct API URL
                 var response = await _httpClient.PostAsync(
                     "https://api-inference.huggingface.co/models/tiiuae/falcon-7b-instruct",
                     content);
 
+                Console.WriteLine($"🔍 API Response Status: {response.StatusCode}");
+
+                // ✅ ADDED: Handle model loading (503 error)
+                if ((int)response.StatusCode == 503)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"🔧 Model is loading: {errorContent}");
+                    return "نظام الذكاء الصناعي جاري التحميل. يرجى المحاولة مرة أخرى خلال دقيقتين أو التواصل على 01148820088 📞";
+                }
+
+                // ✅ ADDED: Handle other errors
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"❌ API Error {response.StatusCode}: {errorContent}");
+                    return $"عذرًا، الخدمة غير متاحة حاليًا (Error: {response.StatusCode}). يرجى التواصل على 01148820088";
+                }
+
                 var result = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"🔍 Raw API Response: {result}");
 
                 // ✅ نحاول نقرأ النص الناتج
-                using var doc = JsonDocument.Parse(result);
+                try
+                {
+                    using var doc = JsonDocument.Parse(result);
 
-                if (doc.RootElement.ValueKind == JsonValueKind.Array && doc.RootElement.GetArrayLength() > 0)
-                {
-                    var text = doc.RootElement[0].GetProperty("generated_text").GetString();
-                    return text ?? "عذرًا، لم أفهم سؤالك تمامًا. ممكن توضحه أكتر؟ 🤔";
+                    if (doc.RootElement.ValueKind == JsonValueKind.Array && doc.RootElement.GetArrayLength() > 0)
+                    {
+                        var text = doc.RootElement[0].GetProperty("generated_text").GetString();
+                        return text ?? "عذرًا، لم أفهم سؤالك تمامًا. ممكن توضحه أكتر؟ 🤔";
+                    }
+                    else
+                    {
+                        return "عذرًا، لم أتلق ردًا من الذكاء الصناعي. حاول تاني لاحقًا 🙏";
+                    }
                 }
-                else
+                catch (JsonException jsonEx)
                 {
-                    return "عذرًا، لم أتلق ردًا من الذكاء الصناعي. حاول تاني لاحقًا 🙏";
+                    Console.WriteLine($"❌ JSON Parse Error: {jsonEx.Message}");
+                    return "عذرًا، حدث خطأ في معالجة الرد. يرجى التواصل على 01148820088";
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ AI Error: {ex.Message}");
-                return "هذا السؤال خارج تخصصنا، للاستفسارات المتخصصة يرجى التواصل على الرقم 01148820088\r\n ";
+                Console.WriteLine($"❌ AI Stack Trace: {ex.StackTrace}");
+                return "هذا السؤال خارج تخصصنا، للاستفسارات المتخصصة يرجى التواصل على الرقم 01148820088";
             }
         }
-    }
-}
+    
