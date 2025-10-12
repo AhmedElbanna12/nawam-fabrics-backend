@@ -146,7 +146,7 @@ namespace fabrics.Services
 
                 // ✅ FIXED: Correct API URL
                 var response = await _httpClient.PostAsync(
-                    "https://api-inference.huggingface.co/models/gpt2",
+                    "https://api-inference.huggingface.co/models/distilgpt2",
                     content);
 
                 Console.WriteLine($"🔍 API Response Status: {response.StatusCode}");
