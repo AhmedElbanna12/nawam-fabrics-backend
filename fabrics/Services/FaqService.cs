@@ -162,7 +162,7 @@ namespace fabrics.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"❌ AI Error: {ex.Message}");
-                return "هذا السؤال خارج تخصصنا، للاستفسارات المتخصصة يرجى التواصل على الرقم 01148820088'\r\n ";
+                return "هذا السؤال خارج تخصصنا، للاستفسارات المتخصصة يرجى التواصل على الرقم 01148820088\r\n ";
             }
         }
     }
