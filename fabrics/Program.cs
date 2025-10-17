@@ -38,6 +38,29 @@ namespace fabrics
 
             builder.Services.AddCors(options =>
             {
+                options.AddPolicy("AllowFrontend",
+                    policy => policy
+                        .WithOrigins(
+                            // Local development
+                            "http://localhost:3000",
+                            "http://127.0.0.1:3000",
+
+                            // Docker internal
+                            "http://frontend:3000",
+
+                            // Nginx configurations
+                            "http://localhost",              // Nginx serving frontend
+                            "http://127.0.0.1",             // Alternative nginx localhost
+                            "https://localhost",             // HTTPS nginx
+                            "https://127.0.0.1",            // HTTPS alternative
+                            "http://yourdomain.com",         // Production domain (nginx)
+                            "https://yourdomain.com"         // Production HTTPS domain (nginx)
+                        )
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials()); // Important for cookies/auth headers
+
+                // Keep the AllowAll policy for other services if needed
                 options.AddPolicy("AllowAll",
                     policy => policy
                         .AllowAnyOrigin()
@@ -51,7 +74,7 @@ namespace fabrics
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
-            app.UseCors("AllowAll");
+            app.UseCors("AllowFrontend"); // Use the specific frontend policy for better security
             var telegramService = app.Services.GetRequiredService<TelegramService>();
 
             // ? polling loop
