@@ -32,9 +32,6 @@ namespace fabrics
             builder.Services.AddHttpClient();
 
 
-            
-
-
 
             builder.Services.AddCors(options =>
             {
@@ -54,19 +51,18 @@ namespace fabrics
                             "https://localhost",             // HTTPS nginx
                             "https://127.0.0.1",            // HTTPS alternative
                             "http://yourdomain.com",         // Production domain (nginx)
-                            "https://yourdomain.com"         // Production HTTPS domain (nginx)
+                            "https://yourdomain.com",      // Production HTTPS domain (nginx)
+                            "http://elnawamfabrics.com",
+                            "https://elnawamfabrics.com",
+                            "http://72.61.163.15",
+                            "https://72.61.163.15"
                         )
                         .AllowAnyMethod()
                         .AllowAnyHeader()
                         .AllowCredentials()); // Important for cookies/auth headers
 
-                // Keep the AllowAll policy for other services if needed
-                options.AddPolicy("AllowAll",
-                    policy => policy
-                        .AllowAnyOrigin()
-                        .AllowAnyMethod()
-                        .AllowAnyHeader());
             });
+
 
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
