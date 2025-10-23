@@ -13,9 +13,8 @@ namespace fabrics.Controllers
         public ReservationsController(AirtableService air) => _air = air;
 
         [HttpPost]
-        [Consumes("multipart/form-data")]
 
-        public async Task<IActionResult> Create([FromForm] CreateReservationDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateReservationDto dto)
         {
             var recordId = await _air.CreateReservationAsync(dto);
             return Ok(new { ReservationId = recordId });
