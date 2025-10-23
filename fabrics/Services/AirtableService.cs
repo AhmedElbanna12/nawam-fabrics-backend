@@ -485,9 +485,9 @@ namespace fabrics.Services
 
                              await _telegram.SendMessageAsync(msg);
 
-                    if (dto.ImageUrls != null && dto.ImageUrls.Count > 0)
+                    if (dto.selectedImages != null && dto.selectedImages.Count > 0)
                     {
-                        await _telegram.SendImagesAsync(dto.ImageUrls);
+                        await _telegram.SendImagesAsync(dto.selectedImages);
                     }
 
 
