@@ -39,7 +39,7 @@ namespace fabrics.Services
             VendorList data;
             try
             {
-                var json = System.IO.File.ReadAllText(_filePath);
+                var json = File.ReadAllText(_filePath);
                 data = JsonSerializer.Deserialize<VendorList>(json) ?? new VendorList();
             }
             catch
@@ -53,7 +53,7 @@ namespace fabrics.Services
 
                 lock (_fileLock)
                 {
-                    System.IO.File.WriteAllText(
+                    File.WriteAllText(
                         _filePath,
                         JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true })
                     );
@@ -79,7 +79,7 @@ namespace fabrics.Services
             VendorList data;
             try
             {
-                var json = System.IO.File.ReadAllText(_filePath);
+                var json = File.ReadAllText(_filePath);
                 data = JsonSerializer.Deserialize<VendorList>(json);
             }
             catch
