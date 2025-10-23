@@ -1,65 +1,161 @@
 [
   {
-    "ContainingType": "fabrics.Controllers.CategoriesController",
-    "Method": "GetAll",
-    "RelativePath": "api/Categories",
+    "ContainingType": "fabrics.Controllers.AirtableController",
+    "Method": "GetAllCategories",
+    "RelativePath": "api/Airtable/categories",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "fabrics.Dtos.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[fabrics.Models.Category, fabrics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
-    "ContainingType": "fabrics.Controllers.MessengerController",
-    "Method": "VerifyMessengerWebhook",
-    "RelativePath": "api/Messenger/webhook",
+    "ContainingType": "fabrics.Controllers.AirtableController",
+    "Method": "GetCategoryById",
+    "RelativePath": "api/Airtable/categories/{categoryId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [
       {
-        "Name": "hub_mode",
+        "Name": "categoryId",
         "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "hub_verify_token",
-        "Type": "System.String",
-        "IsRequired": false
-      },
-      {
-        "Name": "hub_challenge",
-        "Type": "System.String",
-        "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "fabrics.Controllers.MessengerController",
-    "Method": "ReceiveMessengerMessage",
-    "RelativePath": "api/Messenger/webhook",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "body",
-        "Type": "System.Text.Json.JsonElement",
         "IsRequired": true
       }
     ],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "fabrics.Dtos.ApiResponse\u00601[[fabrics.Models.Category, fabrics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
-    "ContainingType": "fabrics.Controllers.productsController",
-    "Method": "GetAll",
-    "RelativePath": "api/products",
+    "ContainingType": "fabrics.Controllers.AirtableController",
+    "Method": "GetSubCategories",
+    "RelativePath": "api/Airtable/categories/{parentCategoryId}/subcategories",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "parentCategoryId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "fabrics.Dtos.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[fabrics.Models.Category, fabrics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "fabrics.Controllers.AirtableController",
+    "Method": "GetMainCategories",
+    "RelativePath": "api/Airtable/categories/main",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
-    "ReturnTypes": []
+    "ReturnTypes": [
+      {
+        "Type": "fabrics.Dtos.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[fabrics.Models.Category, fabrics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "fabrics.Controllers.AirtableController",
+    "Method": "GetCategoryTree",
+    "RelativePath": "api/Airtable/categories/tree",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "fabrics.Dtos.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[fabrics.Dtos.CategoryTreeDto, fabrics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "fabrics.Controllers.AirtableController",
+    "Method": "GetAllProducts",
+    "RelativePath": "api/Airtable/products",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": [
+      {
+        "Type": "fabrics.Dtos.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[fabrics.Models.Product, fabrics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
+  },
+  {
+    "ContainingType": "fabrics.Controllers.AirtableController",
+    "Method": "GetProductsByCategory",
+    "RelativePath": "api/Airtable/products/category/{categoryId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "categoryId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "fabrics.Dtos.ApiResponse\u00601[[System.Collections.Generic.List\u00601[[fabrics.Models.Product, fabrics, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]], System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      }
+    ]
   },
   {
     "ContainingType": "fabrics.Controllers.ReservationsController",

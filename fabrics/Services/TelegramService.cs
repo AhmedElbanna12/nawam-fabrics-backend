@@ -110,7 +110,7 @@ namespace fabrics.Services
         }
 
 
-        public async Task SendImagesAsync(List<string> imageUrls)
+        public async Task SendImagesAsync(List<string> selectedImages)
         {
             VendorList data;
             try
@@ -133,9 +133,9 @@ namespace fabrics.Services
             {
                 try
                 {
-                    if (imageUrls.Count > 1)
+                    if (selectedImages.Count > 1)
                     {
-                        var media = imageUrls
+                        var media = selectedImages
                             .Select(url => new InputMediaPhoto(url) as IAlbumInputMedia)
                             .ToArray();
 
@@ -145,7 +145,7 @@ namespace fabrics.Services
                     {
                         await _botClient.SendPhotoAsync(
                             chatId: chatId,
-                            photo: imageUrls.First(),
+                            photo: selectedImages.First(),
                             caption: "📸"
                         );
                     }
