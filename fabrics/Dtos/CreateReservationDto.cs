@@ -11,7 +11,7 @@ namespace fabrics.Dtos
         public string CustomerPhone { get; set; }
         public string CustomerAddress { get; set; }
 
-      //  public List<string>? ImageUrls { get; set; } = new();
+        public List<string>? ImageUrls { get; set; } = new();
 
 
 
