@@ -482,11 +482,11 @@ namespace fabrics.Services
 
                     await _telegram.SendMessageAsync(msg);
 
-                    // 🖼️ لو في صور، نبعتهالهم
-                    if (dto.ImageUrls != null && dto.ImageUrls.Count > 0)
-                    {
-                        await _telegram.SendImagesAsync(dto.ImageUrls);
-                    }
+                    //// 🖼️ لو في صور، نبعتهالهم
+                    //if (dto.ImageUrls != null && dto.ImageUrls.Count > 0)
+                    //{
+                    //    await _telegram.SendImagesAsync(dto.ImageUrls);
+                    //}
 
 
                     LogInfo($"✅ Reservation created successfully for product: {productName}");

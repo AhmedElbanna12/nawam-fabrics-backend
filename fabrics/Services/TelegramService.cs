@@ -110,52 +110,52 @@ namespace fabrics.Services
         }
 
 
-        public async Task SendImagesAsync(List<string> selectedImages)
-        {
-            VendorList data;
-            try
-            {
-                var json = System.IO.File.ReadAllText(_filePath);
-                data = JsonSerializer.Deserialize<VendorList>(json);
-            }
-            catch
-            {
-                data = new VendorList();
-            }
+        //public async Task SendImagesAsync(List<string> selectedImages)
+        //{
+        //    VendorList data;
+        //    try
+        //    {
+        //        var json = System.IO.File.ReadAllText(_filePath);
+        //        data = JsonSerializer.Deserialize<VendorList>(json);
+        //    }
+        //    catch
+        //    {
+        //        data = new VendorList();
+        //    }
 
-            if (data == null || data.ChatIds.Count == 0)
-            {
-                Console.WriteLine("⚠️ لا يوجد بائعين مسجلين بعد.");
-                return;
-            }
+        //    if (data == null || data.ChatIds.Count == 0)
+        //    {
+        //        Console.WriteLine("⚠️ لا يوجد بائعين مسجلين بعد.");
+        //        return;
+        //    }
 
-            foreach (var chatId in data.ChatIds)
-            {
-                try
-                {
-                    if (selectedImages.Count > 1)
-                    {
-                        var media = selectedImages
-                            .Select(url => new InputMediaPhoto(url) as IAlbumInputMedia)
-                            .ToArray();
+        //    foreach (var chatId in data.ChatIds)
+        //    {
+        //        try
+        //        {
+        //            if (selectedImages.Count > 1)
+        //            {
+        //                var media = selectedImages
+        //                    .Select(url => new InputMediaPhoto(url) as IAlbumInputMedia)
+        //                    .ToArray();
 
-                        await _botClient.SendMediaGroupAsync(chatId, media);
-                    }
-                    else
-                    {
-                        await _botClient.SendPhotoAsync(
-                            chatId: chatId,
-                            photo: selectedImages.First(),
-                            caption: "📸"
-                        );
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"❌ فشل إرسال الصور لـ {chatId}: {ex.Message}");
-                }
-            }
-        }
+        //                await _botClient.SendMediaGroupAsync(chatId, media);
+        //            }
+        //            else
+        //            {
+        //                await _botClient.SendPhotoAsync(
+        //                    chatId: chatId,
+        //                    photo: selectedImages.First(),
+        //                    caption: "📸"
+        //                );
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            Console.WriteLine($"❌ فشل إرسال الصور لـ {chatId}: {ex.Message}");
+        //        }
+        //    }
+        //}
 
 
         private class VendorList
