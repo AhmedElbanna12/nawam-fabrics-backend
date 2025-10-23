@@ -69,7 +69,7 @@
             },
             "Telegram.Bot": {
               "target": "Package",
-              "version": "[18.0.0, )"
+              "version": "[22.7.2, )"
             }
           },
           "imports": [

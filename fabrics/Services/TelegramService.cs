@@ -59,7 +59,7 @@ namespace fabrics.Services
                     );
                 }
 
-                await _botClient.SendTextMessageAsync(
+                await _botClient.SendMessage(
                     chatId: chatId,
                     text: $"✅ تم تسجيلك يا {firstName} لاستقبال بيانات الحجوزات."
                 );
@@ -67,7 +67,7 @@ namespace fabrics.Services
             }
             else
             {
-                await _botClient.SendTextMessageAsync(
+                await _botClient.SendMessage(
                     chatId: chatId,
                     text: $"أنت مسجل بالفعل ✅"
                 );
@@ -97,7 +97,7 @@ namespace fabrics.Services
             {
                 try
                 {
-                    await _botClient.SendTextMessageAsync(
+                    await _botClient.SendMessage(
                         chatId: chatId,
                         text: message
                     );
