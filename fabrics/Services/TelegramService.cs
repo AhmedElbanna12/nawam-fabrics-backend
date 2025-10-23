@@ -1,6 +1,7 @@
 ﻿using Telegram.Bot;
 using Telegram.Bot.Types;
 using System.Text.Json;
+using System.Linq; 
 
 namespace fabrics.Services
 {
@@ -113,16 +114,17 @@ namespace fabrics.Services
             try
             {
                 var json = File.ReadAllText(_filePath);
-                data = JsonSerializer.Deserialize<VendorList>(json);
+                data = JsonSerializer.Deserialize<VendorList>(json) ?? new VendorList();
             }
             catch
             {
                 data = new VendorList();
             }
 
-            if (data == null || data.ChatIds.Count == 0)
+            // تحقق من وجود صور للإرسال
+            if (data.ChatIds.Count == 0 || selectedImages == null || selectedImages.Count == 0)
             {
-                Console.WriteLine("⚠️ لا يوجد بائعين مسجلين بعد.");
+                Console.WriteLine("⚠️ لا يوجد بائعين مسجلين أو لا توجد صور.");
                 return;
             }
 
@@ -132,9 +134,17 @@ namespace fabrics.Services
                 {
                     if (selectedImages.Count > 1)
                     {
+                        // 🖼️ أكثر من صورة: إرسال كألبوم باستخدام SendMediaGroupAsync
                         var media = selectedImages
-                            .Select(url => new InputMediaPhoto(InputFile.FromString(url)))
-                            .ToList();
+                            // نستخدم InputFile.FromUri لإرسال رابط الصورة مباشرة
+                            .Select(url => new InputMediaPhoto(InputFile.FromUri(url)) as IAlbumInputMedia)
+                            .ToArray();
+
+                        // ✅ التصحيح: التحويل إلى InputMediaPhoto للوصول إلى خاصية Caption
+                        if (media.Length > 0 && media[0] is InputMediaPhoto firstPhoto)
+                        {
+                            firstPhoto.Caption = $"📸 حجز جديد - ({media.Length} صور)";
+                        }
 
                         await _botClient.SendMediaGroup(
                             chatId: chatId,
@@ -143,20 +153,23 @@ namespace fabrics.Services
                     }
                     else
                     {
+                        // 🖼️ صورة واحدة: إرسال باستخدام SendPhotoAsync
                         await _botClient.SendPhoto(
                             chatId: chatId,
-                            photo: InputFile.FromString(selectedImages.First()),
-                            caption: "📸"
+                            // نستخدم InputFile.FromUri لإرسال رابط الصورة مباشرة
+                            photo: InputFile.FromUri(selectedImages.First()),
+                            caption: "📸 صورة المنتج للحجز الجديد"
                         );
                     }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"❌ فشل إرسال الصور لـ {chatId}: {ex.Message}");
+                    // رسالة تنبيه للبائع عند فشل إرسال الصور
+                    await _botClient.SendMessage(chatId, "⚠️ فشل إرسال صور المنتج. قد تكون الروابط غير صالحة أو غير قابلة للوصول.");
                 }
             }
         }
-
 
         private class VendorList
         {

@@ -467,6 +467,9 @@ namespace fabrics.Services
                 fields.AddField("Customer Phone", dto.CustomerPhone);
                 fields.AddField("Customer Address", dto.CustomerAddress);
 
+               
+
+                //Attachments
                 var response = await _airtableBase.CreateRecord("Reservations", fields);
 
                 if (response.Success)
@@ -480,13 +483,14 @@ namespace fabrics.Services
                               $"📞 الموبايل: {dto.CustomerPhone}\n" +
                               $"📍 العنوان: {dto.CustomerAddress}";
 
-                    await _telegram.SendMessageAsync(msg);
+                             await _telegram.SendMessageAsync(msg);
 
-                    // 🖼️ لو في صور، نبعتهالهم
                     if (dto.ImageUrls != null && dto.ImageUrls.Count > 0)
                     {
                         await _telegram.SendImagesAsync(dto.ImageUrls);
                     }
+
+
 
 
                     LogInfo($"✅ Reservation created successfully for product: {productName}");
