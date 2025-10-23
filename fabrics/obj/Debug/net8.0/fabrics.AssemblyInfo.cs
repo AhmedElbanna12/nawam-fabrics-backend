@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("fabrics")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c42ced964c3b072cd5f1f214b21f66849ad89a49")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b015149054104ba80d30c8a6c5ce6872e9017261")]
 [assembly: System.Reflection.AssemblyProductAttribute("fabrics")]
 [assembly: System.Reflection.AssemblyTitleAttribute("fabrics")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
