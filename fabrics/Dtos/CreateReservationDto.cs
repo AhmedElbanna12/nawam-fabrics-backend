@@ -13,7 +13,7 @@ namespace fabrics.Dtos
 
       //  public List<IFormFile>? Images { get; set; }
 
-        public List<string>? selectedImages { get; set; }
+       // public List<string>? selectedImages { get; set; }
 
 
 
