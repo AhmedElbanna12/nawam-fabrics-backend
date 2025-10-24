@@ -102,7 +102,7 @@ namespace fabrics.Services
                 return;
             }
 
-            foreach (var chatId in data.ChatIds)
+            foreach (var chatId in data.ChatIds.ToList()) // نستخدم ToList لتجنب مشاكل التعديل أثناء التكرار
             {
                 try
                 {
@@ -111,6 +111,11 @@ namespace fabrics.Services
                         text: message
                     );
                     Console.WriteLine($"📨 تم إرسال الرسالة لـ {chatId}");
+                }
+                catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.Message.Contains("USER_IS_BLOCKED"))
+                {
+                    Console.WriteLine($"⚠️ المستخدم {chatId} عمل بلوك للبوت. سيتم تجاهل الرسائل مؤقتًا.");
+                    // اختيارياً: يمكن إزالة الـ chatId مؤقتًا أو تسجيله في قائمة blocked
                 }
                 catch (Exception ex)
                 {
@@ -139,7 +144,7 @@ namespace fabrics.Services
                 return;
             }
 
-            foreach (var chatId in data.ChatIds)
+            foreach (var chatId in data.ChatIds.ToList())
             {
                 try
                 {
@@ -147,11 +152,9 @@ namespace fabrics.Services
                     {
                         // 🖼️ أكثر من صورة: إرسال كألبوم باستخدام SendMediaGroupAsync
                         var media = selectedImages
-                            // نستخدم InputFile.FromUri لإرسال رابط الصورة مباشرة
                             .Select(url => new InputMediaPhoto(InputFile.FromUri(url)) as IAlbumInputMedia)
                             .ToArray();
 
-                        // ✅ التصحيح: التحويل إلى InputMediaPhoto للوصول إلى خاصية Caption
                         if (media.Length > 0 && media[0] is InputMediaPhoto firstPhoto)
                         {
                             firstPhoto.Caption = $"📸 حجز جديد - ({media.Length} صور)";
@@ -164,19 +167,20 @@ namespace fabrics.Services
                     }
                     else
                     {
-                        // 🖼️ صورة واحدة: إرسال باستخدام SendPhotoAsync
                         await _botClient.SendPhoto(
                             chatId: chatId,
-                            // نستخدم InputFile.FromUri لإرسال رابط الصورة مباشرة
                             photo: InputFile.FromUri(selectedImages.First()),
                             caption: "📸 صورة المنتج للحجز الجديد"
                         );
                     }
                 }
+                catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.Message.Contains("USER_IS_BLOCKED"))
+                {
+                    Console.WriteLine($"⚠️ المستخدم {chatId} عمل بلوك للبوت. سيتم تجاهل الصور مؤقتًا.");
+                }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"❌ فشل إرسال الصور لـ {chatId}: {ex.Message}");
-                    // رسالة تنبيه للبائع عند فشل إرسال الصور
                     await _botClient.SendMessage(chatId, "⚠️ فشل إرسال صور المنتج. قد تكون الروابط غير صالحة أو غير قابلة للوصول.");
                 }
             }
