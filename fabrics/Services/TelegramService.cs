@@ -119,6 +119,75 @@ namespace fabrics.Services
             }
         }
 
+        public async Task SendImagesAsync(List<string> selectedImages)
+        {
+            VendorList data;
+            try
+            {
+                var json = File.ReadAllText(_filePath);
+                data = JsonSerializer.Deserialize<VendorList>(json) ?? new VendorList();
+            }
+            catch
+            {
+                data = new VendorList();
+            }
+
+            // تحقق من وجود صور للإرسال
+            if (data.ChatIds.Count == 0 || selectedImages == null || selectedImages.Count == 0)
+            {
+                Console.WriteLine("⚠️ لا يوجد بائعين مسجلين أو لا توجد صور.");
+                return;
+            }
+
+            foreach (var chatId in data.ChatIds)
+            {
+                try
+                {
+                    if (selectedImages.Count > 1)
+                    {
+                        // 🖼️ أكثر من صورة: إرسال كألبوم باستخدام SendMediaGroupAsync
+                        var media = selectedImages
+                            // نستخدم InputFile.FromUri لإرسال رابط الصورة مباشرة
+                            .Select(url => new InputMediaPhoto(InputFile.FromUri(url)) as IAlbumInputMedia)
+                            .ToArray();
+
+                        // ✅ التصحيح: التحويل إلى InputMediaPhoto للوصول إلى خاصية Caption
+                        if (media.Length > 0 && media[0] is InputMediaPhoto firstPhoto)
+                        {
+                            firstPhoto.Caption = $"📸 حجز جديد - ({media.Length} صور)";
+                        }
+
+                        await _botClient.SendMediaGroup(
+                            chatId: chatId,
+                            media: media
+                        );
+                    }
+                    else
+                    {
+                        // 🖼️ صورة واحدة: إرسال باستخدام SendPhotoAsync
+                        await _botClient.SendPhoto(
+                            chatId: chatId,
+                            // نستخدم InputFile.FromUri لإرسال رابط الصورة مباشرة
+                            photo: InputFile.FromUri(selectedImages.First()),
+                            caption: "📸 صورة المنتج للحجز الجديد"
+                        );
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"❌ فشل إرسال الصور لـ {chatId}: {ex.Message}");
+                    // رسالة تنبيه للبائع عند فشل إرسال الصور
+                    await _botClient.SendMessage(chatId, "⚠️ فشل إرسال صور المنتج. قد تكون الروابط غير صالحة أو غير قابلة للوصول.");
+                }
+            }
+        }
+
+
+
+
+
+
+
         private class VendorList
         {
             public List<long> ChatIds { get; set; } = new();
