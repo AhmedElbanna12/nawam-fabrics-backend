@@ -466,8 +466,9 @@ namespace fabrics.Services
                 fields.AddField("Customer Name", dto.CustomerName);
                 fields.AddField("Customer Phone", dto.CustomerPhone);
                 fields.AddField("Customer Address", dto.CustomerAddress);
+                fields.AddField("Images", dto.selectedImages);
 
-               
+
 
                 //Attachments
                 var response = await _airtableBase.CreateRecord("Reservations", fields);
@@ -488,6 +489,7 @@ namespace fabrics.Services
                     if (dto.selectedImages != null && dto.selectedImages.Count > 0)
                     {
                         await _telegram.SendImagesAsync(dto.selectedImages);
+
                     }
 
 
