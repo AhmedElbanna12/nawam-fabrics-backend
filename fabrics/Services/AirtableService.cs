@@ -466,7 +466,6 @@ namespace fabrics.Services
                 fields.AddField("Customer Name", dto.CustomerName);
                 fields.AddField("Customer Phone", dto.CustomerPhone);
                 fields.AddField("Customer Address", dto.CustomerAddress);
-                fields.AddField("Images", dto.selectedImages);
 
 
 
@@ -484,11 +483,11 @@ namespace fabrics.Services
                               $"📞 الموبايل: {dto.CustomerPhone}\n" +
                               $"📍 العنوان: {dto.CustomerAddress}";
 
-                             await _telegram.SendMessageAsync(msg);
+                           await _telegram.SendMessageAsync(msg);
 
-                    if (dto.selectedImages != null && dto.selectedImages.Count > 0)
+                    if (dto.Images != null && dto.Images.Count > 0)
                     {
-                        await _telegram.SendImagesAsync(dto.selectedImages);
+                        await _telegram.SendImagesAsync(dto.Images);
 
                     }
 

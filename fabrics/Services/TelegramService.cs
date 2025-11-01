@@ -124,7 +124,7 @@ namespace fabrics.Services
             }
         }
 
-        public async Task SendImagesAsync(List<string> selectedImages)
+        public async Task SendImagesAsync(List<string> Images)
         {
             VendorList data;
             try
@@ -138,7 +138,7 @@ namespace fabrics.Services
             }
 
             // تحقق من وجود صور للإرسال
-            if (data.ChatIds.Count == 0 || selectedImages == null || selectedImages.Count == 0)
+            if (data.ChatIds.Count == 0 || Images == null || Images.Count == 0)
             {
                 Console.WriteLine("⚠️ لا يوجد بائعين مسجلين أو لا توجد صور.");
                 return;
@@ -148,10 +148,10 @@ namespace fabrics.Services
             {
                 try
                 {
-                    if (selectedImages.Count > 1)
+                    if (Images.Count > 1)
                     {
                         // 🖼️ أكثر من صورة: إرسال كألبوم باستخدام SendMediaGroupAsync
-                        var media = selectedImages
+                        var media = Images
                             .Select(url => new InputMediaPhoto(InputFile.FromUri(url)) as IAlbumInputMedia)
                             .ToArray();
 
@@ -169,7 +169,7 @@ namespace fabrics.Services
                     {
                         await _botClient.SendPhoto(
                             chatId: chatId,
-                            photo: InputFile.FromUri(selectedImages.First()),
+                            photo: InputFile.FromUri(Images.First()),
                             caption: "📸 صورة المنتج للحجز الجديد"
                         );
                     }
