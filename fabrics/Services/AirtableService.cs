@@ -504,21 +504,11 @@ namespace fabrics.Services
 
             try
             {
-                var fields = new Fields();
-                fields.AddField("Product", new string[] { dto.ProductRecordId });
-                fields.AddField("Quantity Meters", dto.QuantityMeters);
-                fields.AddField("Customer Name", dto.CustomerName);
-                fields.AddField("Customer Phone", dto.CustomerPhone);
-                fields.AddField("Customer Address", dto.CustomerAddress);
+                // No Airtable usage: generate local reservation id and notify via Telegram.
+                var reservationId = Guid.NewGuid().ToString();
 
-               
-
-                //Attachments
-                var response = await _airtableBase.CreateRecord("Reservations", fields);
-
-                if (response.Success)
-                {
-                    var productName = await GetProductNameByIdAsync(dto.ProductRecordId);
+                // Resolve product name from the external API (fallback to id on failure)
+                var productName = await GetProductNameFromApiAsync(dto.ProductRecordId);
 
                 var msg = $"🧾 حجز جديد!\n" +
                           $"📦 المنتج: {productName}\n" +
@@ -528,12 +518,12 @@ namespace fabrics.Services
                           $"📍 العنوان: {dto.CustomerAddress}\n" +
                           $"🆔 ReservationId: {reservationId}";
 
-                             await _telegram.SendMessageAsync(msg);
+                await _telegram.SendMessageAsync(msg);
 
-                    if (dto.selectedImages != null && dto.selectedImages.Count > 0)
-                    {
-                        await _telegram.SendImagesAsync(dto.selectedImages);
-                    }
+                if (dto.Images != null && dto.Images.Count > 0)
+                {
+                    await _telegram.SendImagesAsync(dto.Images);
+                }
 
                 LogInfo($"Reservation processed locally. ReservationId: {reservationId}");
                 return reservationId;
