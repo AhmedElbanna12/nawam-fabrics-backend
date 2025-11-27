@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System.Text;
 using System.Text.Json;
+using System.Net.Http;
 using System.Text.Json.Serialization;
 using DocumentFormat.OpenXml.Spreadsheet;
 using fabrics.Models;
@@ -19,6 +20,7 @@ namespace fabrics.Services
         private readonly AirtableBase _airtableBase;
         private readonly string _categoriesTableName;
         private readonly string _productsTableName;
+        private static readonly HttpClient _httpClient = new HttpClient();
 
         public AirtableService(IConfiguration config, TelegramService telegram)
         {
@@ -452,62 +454,84 @@ namespace fabrics.Services
             return "اسم غير معروف";
         }
 
-        // ✅ إنشاء Reservation جديد
-        public async Task<string> CreateReservationAsync(CreateReservationDto dto)
+        // Get product name from the site API (used instead of Airtable lookups)
+        private async Task<string> GetProductNameFromApiAsync(string productId)
         {
-            if (string.IsNullOrEmpty(dto.ProductRecordId))
-                throw new Exception("ProductRecordId is required and must be a valid Airtable record ID.");
+            if (string.IsNullOrEmpty(productId)) return "غير معروف";
 
             try
             {
-                var fields = new Fields();
-                fields.AddField("Product", new string[] { dto.ProductRecordId });
-                fields.AddField("Quantity Meters", dto.QuantityMeters);
-                fields.AddField("Customer Name", dto.CustomerName);
-                fields.AddField("Customer Phone", dto.CustomerPhone);
-                fields.AddField("Customer Address", dto.CustomerAddress);
-
-               
-
-                //Attachments
-                var response = await _airtableBase.CreateRecord("Reservations", fields);
-
-                if (response.Success)
+                var url = $"https://elnawamfabrics.com/api/products/{productId}";
+                var resp = await _httpClient.GetAsync(url);
+                if (!resp.IsSuccessStatusCode)
                 {
-                    var productName = await GetProductNameByIdAsync(dto.ProductRecordId);
+                    LogError($"Failed to fetch product from API. Status: {resp.StatusCode}");
+                    return productId;
+                }
 
-                    var msg = $"🧾 حجز جديد!\n" +
-                              $"📦 المنتج: {productName}\n" +
-                              $"📏 الكمية: {dto.QuantityMeters} متر\n" +
-                              $"👤 الاسم: {dto.CustomerName}\n" +
-                              $"📞 الموبايل: {dto.CustomerPhone}\n" +
-                              $"📍 العنوان: {dto.CustomerAddress}";
+                var json = await resp.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
 
-                             await _telegram.SendMessageAsync(msg);
+                // Try common shapes: root.Name or root.data.Name
+                if (doc.RootElement.ValueKind == JsonValueKind.Object)
+                {
+                    if (doc.RootElement.TryGetProperty("Name", out var nameProp) || doc.RootElement.TryGetProperty("name", out nameProp))
+                        return nameProp.GetString() ?? productId;
 
-                    if (dto.selectedImages != null && dto.selectedImages.Count > 0)
+                    if (doc.RootElement.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Object)
                     {
-                        await _telegram.SendImagesAsync(dto.selectedImages);
+                        if (data.TryGetProperty("Name", out var dName) || data.TryGetProperty("name", out dName))
+                            return dName.GetString() ?? productId;
                     }
-
-
-
-
-                    LogInfo($"✅ Reservation created successfully for product: {productName}");
-
-                    return response.Record.Id;
                 }
-                else
-                {
-                    var errorMsg = response.AirtableApiError?.ErrorMessage ?? "Unknown error";
-                    var detailedMsg = response.AirtableApiError?.DetailedErrorMessage ?? "No details";
-                    LogError($"Airtable error creating reservation: {errorMsg}. Details: {detailedMsg}");
-                    throw new Exception($"Airtable error: {errorMsg}. Details: {detailedMsg}");
-                }
+
+                return productId;
             }
             catch (Exception ex)
             {
-                LogError("Error creating reservation", ex);
+                LogError($"Error fetching product from API for id {productId}", ex);
+                return productId;
+            }
+        }
+
+        // ✅ إنشاء Reservation جديد (محلي، بدون استدعاءات Airtable)
+        // هذا الأسلوب لا يقوم بعد الآن بإنشاء سجلات في Airtable. بدلاً من ذلك
+        // سيتم توليد معرّف حجز محلي (GUID) وإرسال إشعارات فقط.
+        public async Task<string> CreateReservationAsync(CreateReservationDto dto)
+        {
+            if (string.IsNullOrEmpty(dto.ProductRecordId))
+                throw new Exception("ProductRecordId is required.");
+
+            try
+            {
+                // Generate a local reservation id and avoid any Airtable API calls.
+                var reservationId = Guid.NewGuid().ToString();
+
+                // Try to resolve the product name from the site's API; fall back to the id.
+                var productName = await GetProductNameFromApiAsync(dto.ProductRecordId);
+
+                var msg = $"🧾 حجز جديد!\n" +
+                          $"📦 المنتج: {productName}\n" +
+                          $"📏 الكمية: {dto.QuantityMeters} متر\n" +
+                          $"👤 الاسم: {dto.CustomerName}\n" +
+                          $"📞 الموبايل: {dto.CustomerPhone}\n" +
+                          $"📍 العنوان: {dto.CustomerAddress}\n" +
+                          $"🆔 ReservationId: {reservationId}";
+
+                // Send notification through Telegram (this does not call Airtable).
+                await _telegram.SendMessageAsync(msg);
+
+                if (dto.selectedImages != null && dto.selectedImages.Count > 0)
+                {
+                    await _telegram.SendImagesAsync(dto.selectedImages);
+                }
+
+                LogInfo($"Reservation processed locally. ReservationId: {reservationId}");
+                return reservationId;
+            }
+            catch (Exception ex)
+            {
+                LogError("Error processing reservation (local)", ex);
                 throw;
             }
         }
