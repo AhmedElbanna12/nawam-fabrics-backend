@@ -504,11 +504,21 @@ namespace fabrics.Services
 
             try
             {
-                // Generate a local reservation id and avoid any Airtable API calls.
-                var reservationId = Guid.NewGuid().ToString();
+                var fields = new Fields();
+                fields.AddField("Product", new string[] { dto.ProductRecordId });
+                fields.AddField("Quantity Meters", dto.QuantityMeters);
+                fields.AddField("Customer Name", dto.CustomerName);
+                fields.AddField("Customer Phone", dto.CustomerPhone);
+                fields.AddField("Customer Address", dto.CustomerAddress);
 
-                // Try to resolve the product name from the site's API; fall back to the id.
-                var productName = await GetProductNameFromApiAsync(dto.ProductRecordId);
+               
+
+                //Attachments
+                var response = await _airtableBase.CreateRecord("Reservations", fields);
+
+                if (response.Success)
+                {
+                    var productName = await GetProductNameByIdAsync(dto.ProductRecordId);
 
                 var msg = $"🧾 حجز جديد!\n" +
                           $"📦 المنتج: {productName}\n" +
@@ -518,13 +528,12 @@ namespace fabrics.Services
                           $"📍 العنوان: {dto.CustomerAddress}\n" +
                           $"🆔 ReservationId: {reservationId}";
 
-                // Send notification through Telegram (this does not call Airtable).
-                await _telegram.SendMessageAsync(msg);
+                             await _telegram.SendMessageAsync(msg);
 
-                if (dto.selectedImages != null && dto.selectedImages.Count > 0)
-                {
-                    await _telegram.SendImagesAsync(dto.selectedImages);
-                }
+                    if (dto.selectedImages != null && dto.selectedImages.Count > 0)
+                    {
+                        await _telegram.SendImagesAsync(dto.selectedImages);
+                    }
 
                 LogInfo($"Reservation processed locally. ReservationId: {reservationId}");
                 return reservationId;

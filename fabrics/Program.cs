@@ -12,10 +12,22 @@ namespace fabrics
     {
         public static void Main(string[] args)
         {
+
+
             var builder = WebApplication.CreateBuilder(args);
 
             builder.WebHost.UseUrls("http://0.0.0.0:" + (Environment.GetEnvironmentVariable("PORT") ?? "7227"));
-           ////builder.WebHost.UseUrls($"http://*:{Port}");
+            //builder.WebHost.UseUrls($"http://*:{Port}");
+
+
+
+
+            builder.Configuration.AddEnvironmentVariables();
+            DotNetEnv.Env.Load();
+
+
+
+
 
 
 

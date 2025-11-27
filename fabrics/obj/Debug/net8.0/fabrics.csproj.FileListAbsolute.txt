@@ -42,3 +42,5 @@ E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\vendors.json
 E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\DocumentFormat.OpenXml.dll
 E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\DocumentFormat.OpenXml.Framework.dll
 E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\System.IO.Packaging.dll
+E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\DotNetEnv.dll
+E:\projects\Backend\nawam fabrics\fabrics\fabrics\bin\Debug\net8.0\Sprache.dll
