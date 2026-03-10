@@ -173,6 +173,17 @@ namespace fabrics.Services
                             caption: "📸 صورة المنتج للحجز الجديد"
                         );
                     }
+                    // بعد إرسال الصور، نرسل دائماً قائمة روابط الصور حتى لو نجح الإرسال
+                    try
+                    {
+                        var urlsText = "🔗 روابط الصور:\n" + string.Join("\n", Images);
+                        await _botClient.SendMessage(chatId, urlsText);
+                    }
+                    catch (Exception ex)
+                    {
+                        // لا نريد أن يفشل المرسل الكلي إذا فشل إرسال روابط فقط
+                        Console.WriteLine($"⚠️ فشل إرسال روابط الصور لـ {chatId}: {ex.Message}");
+                    }
                 }
                 catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.Message.Contains("USER_IS_BLOCKED"))
                 {
@@ -181,7 +192,16 @@ namespace fabrics.Services
                 catch (Exception ex)
                 {
                     Console.WriteLine($"❌ فشل إرسال الصور لـ {chatId}: {ex.Message}");
-                    await _botClient.SendMessage(chatId, "⚠️ فشل إرسال صور المنتج. قد تكون الروابط غير صالحة أو غير قابلة للوصول.");
+                    // عند الفشل نحاول إرسال روابط الصور كبديل حتى يتمكن البائع من الاطلاع عليها
+                    try
+                    {
+                        var fallbackText = "⚠️ فشل إرسال صور المنتج. استخدم الروابط التالية لعرض الصور:\n" + string.Join("\n", Images);
+                        await _botClient.SendMessage(chatId, fallbackText);
+                    }
+                    catch (Exception sendEx)
+                    {
+                        Console.WriteLine($"❌ فشل إرسال روابط الصور كبديل لـ {chatId}: {sendEx.Message}");
+                    }
                 }
             }
         }
